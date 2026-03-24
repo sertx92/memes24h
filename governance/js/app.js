@@ -22,6 +22,8 @@ function route() {
   else if (hash.startsWith('#/proposal/')) renderProposalDetail(hash.split('#/proposal/')[1]);
   else if (hash === '#/create') renderCreateProposal();
   else if (hash === '#/config') renderConfig();
+  else if (hash === '#/profile') renderProfile();
+  else if (hash.startsWith('#/profile/')) renderProfile(hash.split('#/profile/')[1]);
   else renderDashboard();
 }
 
@@ -73,11 +75,13 @@ function renderUserArea() {
 
   userArea.innerHTML = `
     <div class="user-info">
-      ${pfpHtml}
-      <div class="user-details">
-        <div class="user-handle">${userIdentity.handle || shortAddress(userIdentity.address)} ${delegateTag}</div>
-        <div class="user-tdh">${formatTDH(userIdentity.tdh)} TDH &middot; Level ${userIdentity.level}</div>
-      </div>
+      <a href="#/profile" class="user-link">
+        ${pfpHtml}
+        <div class="user-details">
+          <div class="user-handle">${userIdentity.handle || shortAddress(userIdentity.address)} ${delegateTag}</div>
+          <div class="user-tdh">${formatTDH(userIdentity.tdh)} TDH &middot; Level ${userIdentity.level}</div>
+        </div>
+      </a>
       <button class="btn btn-sm btn-disconnect" onclick="disconnectWalletBtn()">Disconnect</button>
     </div>
   `;
@@ -409,6 +413,182 @@ async function renderConfig() {
           <div class="config-detail-id">${c.slug}</div>
         </div>
       `).join('')}
+    </div>
+  `;
+}
+
+// === PROFILE ===
+async function renderProfile(addressParam) {
+  currentView = 'profile';
+  app.innerHTML = '<div class="loading">Loading profile...</div>';
+
+  let identity;
+
+  if (addressParam) {
+    // Viewing someone else's profile
+    identity = await resolveIdentity(addressParam);
+  } else if (userIdentity) {
+    // Viewing own profile
+    identity = userIdentity;
+  } else {
+    app.innerHTML = '<div class="empty-state">Connect your wallet to view your profile. <a href="#/">Back</a></div>';
+    return;
+  }
+
+  // Resolve pfp
+  let pfpSrc = '';
+  if (identity.pfp) {
+    pfpSrc = identity.pfp.startsWith('ipfs://')
+      ? identity.pfp.replace('ipfs://', 'https://ipfs.io/ipfs/')
+      : identity.pfp;
+  }
+
+  // Find all proposals and votes by this user
+  const proposals = await listProposals();
+  const primaryAddr = identity.primaryAddress.toLowerCase();
+
+  const userProposals = proposals.filter(p =>
+    p.proposer.address.toLowerCase() === primaryAddr ||
+    (p.proposer.handle && p.proposer.handle === identity.handle)
+  );
+
+  // Check votes across all active proposals
+  let allocatedTDH = 0;
+  let voteHistory = [];
+
+  for (const p of proposals) {
+    const votes = await getProposalVotes(p.id);
+    for (const v of votes) {
+      const voterAddr = (v.voter || '').toLowerCase();
+      const submitterAddr = (v.submittedBy || '').toLowerCase();
+      if (voterAddr === primaryAddr || submitterAddr === primaryAddr) {
+        const currentTDH = identity.tdh;
+        if (p.status === 'active') {
+          allocatedTDH += currentTDH;
+        }
+        voteHistory.push({
+          proposalId: p.id,
+          waveName: p.waveName,
+          vote: v.vote,
+          status: p.status,
+          tdhAtVote: v.voterTDH || v.currentTDH || 0
+        });
+      }
+    }
+  }
+
+  const freeTDH = identity.tdh; // TDH is not locked, it's used as weight
+  const canPropose = identity.tdh >= CONFIG.MIN_TDH_PROPOSE;
+
+  // 6529 profile link
+  const seizeLink = identity.handle
+    ? `https://6529.io/${identity.handle}`
+    : `https://6529.io/identity/${identity.primaryAddress}`;
+
+  app.innerHTML = `
+    <a href="#/" class="back-link">&larr; Back to Dashboard</a>
+
+    <div class="profile-page">
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <div class="profile-pfp-container">
+          ${pfpSrc
+            ? `<img src="${pfpSrc}" class="profile-pfp" alt="${identity.handle || 'Profile'}">`
+            : '<div class="profile-pfp-empty"></div>'
+          }
+        </div>
+        <div class="profile-info">
+          <h2 class="profile-name">${identity.handle || shortAddress(identity.primaryAddress)}</h2>
+          ${identity.isDelegate ? '<span class="tag-delegate">Connected via delegate wallet</span>' : ''}
+          <div class="profile-address">${identity.primaryAddress}</div>
+          <a href="${seizeLink}" target="_blank" class="profile-6529-link">View on 6529.io &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <div class="profile-stat-value">${formatTDH(identity.tdh)}</div>
+          <div class="profile-stat-label">Total TDH</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value">${identity.level}</div>
+          <div class="profile-stat-label">Level</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value">${formatTDH(identity.rep)}</div>
+          <div class="profile-stat-label">Rep</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value">${formatTDH(identity.cic)}</div>
+          <div class="profile-stat-label">CIC</div>
+        </div>
+      </div>
+
+      <!-- Governance Stats -->
+      <div class="profile-section">
+        <h3>Governance Activity</h3>
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <div class="profile-stat-value">${voteHistory.length}</div>
+            <div class="profile-stat-label">Votes Cast</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-value">${userProposals.length}</div>
+            <div class="profile-stat-label">Proposals Created</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-value">${formatTDH(allocatedTDH)}</div>
+            <div class="profile-stat-label">TDH on Active Votes</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-value">${canPropose ? 'Yes' : 'No'}</div>
+            <div class="profile-stat-label">Can Propose (1M+)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consolidation -->
+      ${identity.consolidationWallets.length > 1 ? `
+        <div class="profile-section">
+          <h3>Consolidated Wallets</h3>
+          <div class="wallet-list">
+            ${identity.consolidationWallets.map(w => `
+              <div class="wallet-item">
+                <span class="wallet-addr">${w}</span>
+                ${w.toLowerCase() === identity.primaryAddress.toLowerCase() ? '<span class="tag-primary">Primary</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- User Proposals -->
+      ${userProposals.length > 0 ? `
+        <div class="profile-section">
+          <h3>My Proposals</h3>
+          <div class="proposals-grid">
+            ${userProposals.map(p => renderProposalCard(p)).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Vote History -->
+      ${voteHistory.length > 0 ? `
+        <div class="profile-section">
+          <h3>Vote History</h3>
+          <div class="vote-history">
+            ${voteHistory.map(v => `
+              <div class="vote-history-item">
+                <span class="vote-badge vote-${v.vote}">${v.vote.toUpperCase()}</span>
+                <a href="#/proposal/${v.proposalId}" class="vote-history-wave">${v.waveName}</a>
+                <span class="vote-history-tdh">${formatTDH(v.tdhAtVote)} TDH</span>
+                <span class="proposal-status status-${v.status}">${v.status.toUpperCase()}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
     </div>
   `;
 }
