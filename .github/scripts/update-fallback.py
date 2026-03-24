@@ -30,9 +30,20 @@ def news_to_js(news_items):
             'image': item.get('image'),
             'dataBoxes': item.get('dataBoxes')
         })
-    json_str = json.dumps(clean_items, ensure_ascii=False)
+    # Clean newlines from string values (they break JSON.parse in template literals)
+    def clean_val(v):
+        if isinstance(v, str):
+            return v.replace('\n', ' ').replace('\r', ' ').strip()
+        if isinstance(v, dict):
+            return {k: clean_val(vv) for k, vv in v.items()}
+        if isinstance(v, list):
+            return [clean_val(vv) for vv in v]
+        return v
+
+    clean_items = [clean_val(item) for item in clean_items]
+    json_str = json.dumps(clean_items, ensure_ascii=True)
     # Escape backticks and ${} for JS template literal safety
-    json_str = json_str.replace('\\', '\\\\').replace('`', '\\`').replace('${', '\\${')
+    json_str = json_str.replace('`', '\\`').replace('${', '\\${')
     return f'JSON.parse(`{json_str}`)'
 
 
@@ -52,15 +63,25 @@ def main():
     with open(HTML_PATH) as f:
         html = f.read()
 
-    # Find and replace the NEWS_FALLBACK array
-    pattern = r'(const NEWS_FALLBACK = )\[[\s\S]*?\n    \];'
-    replacement = f'\\1{news_to_js(news)};'
-
-    new_html, count = re.subn(pattern, replacement, html, count=1)
-
-    if count == 0:
+    # Find and replace the NEWS_FALLBACK array using string search (avoid regex escaping issues)
+    start_marker = 'const NEWS_FALLBACK = '
+    start_idx = html.find(start_marker)
+    if start_idx == -1:
         print('Could not find NEWS_FALLBACK in index.html')
         return
+
+    # Find the closing semicolon after JSON.parse(`...`); or [...];
+    search_from = start_idx + len(start_marker)
+    # Find the next line that starts with "    let NEWS" (the line after the fallback)
+    end_marker = '\n\n    let NEWS'
+    end_idx = html.find(end_marker, search_from)
+    if end_idx == -1:
+        print('Could not find end of NEWS_FALLBACK')
+        return
+
+    new_fallback = f'{start_marker}{news_to_js(news)};'
+    new_html = html[:start_idx] + new_fallback + html[end_idx:]
+    count = 1
 
     with open(HTML_PATH, 'w') as f:
         f.write(new_html)
