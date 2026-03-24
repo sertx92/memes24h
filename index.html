@@ -10,8 +10,8 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    width: 1200px;
-    height: 675px;
+    width: 1080px;
+    height: 1080px;
     overflow: hidden;
     font-family: 'Oswald', sans-serif;
     background: #0a0a18;
@@ -812,7 +812,58 @@
   <script>
     // === NEWS DATA (loaded dynamically, fallback hardcoded) ===
     const NEWS_URL = 'https://raw.githubusercontent.com/sertx92/memes24h/main/data/news-latest.json';
-    const NEWS_FALLBACK = JSON.parse(`[{"category": "MAIN STAGE TOP 3", "headline": "#1 dangiuz Leads with 98.6M TDH", "summary": "#1 \"Cogito, ergo sum\" by dangiuz (98.6M TDH, 59 voters) | #17 \"Network for Good \" by BrynnAlise (4.0M TDH, 23 voters) | #51 \"Farmacy\" by MintFace (630K TDH, 2 voters)", "source": "The Memes - Main Stage", "link": "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077", "image": {"url": "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_9d8defd4-e381-42f7-b387-b9db2852ff7f/392a10e2-c774-4ab4-a1d4-3aed12b1ed27.jpg", "label": "#1 Cogito, ergo sum - dangiuz"}, "dataBoxes": [{"label": "#1 dangiuz", "value": "98.6M", "sub": "TDH (59 votes)"}, {"label": "#17 BrynnAlise", "value": "4.0M", "sub": "TDH (23 votes)"}, {"label": "#51 MintFace", "value": "630K", "sub": "TDH (2 votes)"}]}, {"category": "SUPERRARE TOP 3", "headline": "#1 Kostas_Photo Leads with 765K TDH", "summary": "#1 \"GM to all   As a self taught photographe\" by Kostas_Photo (765K TDH, 7 voters) | #2 \"Greetings friends,  I\u2019m a physician and \" by awhurst (556K TDH, 11 voters) | #3 \"WAGMI\" by blake69 (301K TDH, 7 voters)", "source": "SuperRare x 6529", "link": "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd", "image": {"url": "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_5b7ea9c6-2ca3-48a3-a5ee-79a7cc7ce359/b54609c2-b0de-42e5-9916-523036e874d4.JPG", "label": "#1 GM to all   As a self taught photographe - Kostas_Photo"}, "dataBoxes": [{"label": "#1 Kostas_Photo", "value": "765K", "sub": "TDH (7 votes)"}, {"label": "#2 awhurst", "value": "556K", "sub": "TDH (11 votes)"}, {"label": "#3 blake69", "value": "301K", "sub": "TDH (7 votes)"}]}, {"category": "COMMUNITY|CULTURE", "headline": "6529 Veteran Describes 'TDH Millionaire' Paradox", "summary": "A user in 'maybe's dive bar', known as blocknoob, humorously detailed a conversation with his wife about his wealth within the 6529 ecosystem. He explained that being a 'TDH multi-millionaire' translates to 'zero' value outside of the community, leading to his wife walking out. \"Not a lot to people outside 6529 ecosystem,\" blocknoob stated.", "source": "maybe's dive bar", "link": "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e", "image": null, "dataBoxes": null}, {"category": "MARKET|TRENDS", "headline": "TDH Price Discussions Heat Up in 'maybe's dive bar'", "summary": "Users in 'maybe's dive bar' expressed disbelief at the current valuation of TDH, with dangiuz commenting, \"100M TDH? you guys are fking crazy.\" This indicates a growing discussion around the token's price and perceived value within the 6529 community.", "source": "maybe's dive bar", "link": "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e", "image": null, "dataBoxes": null}, {"category": "ART|COMMUNITY", "headline": "Artists Express Gratitude for Votes and REP on Main Stage", "summary": "Several artists on 'The Memes - Main Stage' publicly thanked voters for their support, including Minotaur_Man who said, \"Many thanks for the REP @[gpebbles] & @[BrynnAlise] \ud83e\udd73\". This highlights the importance of community engagement and recognition within the 6529 art scene.", "source": "The Memes - Main Stage", "link": "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077", "image": null, "dataBoxes": null}, {"category": "ART|COMMUNITY", "headline": "Longexposure Shares Atmospheric Artwork on Main Stage", "summary": "Artist longexposure posted a detailed description of their latest artwork on 'The Memes - Main Stage', depicting a lone caravan in a desolate landscape. The artist described the piece as a \"testament to resilience,\" emphasizing themes of isolation and perseverance.", "source": "The Memes - Main Stage", "link": "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077", "image": null, "dataBoxes": null}, {"category": "ART|COMMUNITY", "headline": "SuperRare Applicants Seek Clarification on Submission Process", "summary": "In 'SuperRare Chat & Application Boost', Gsen inquired about the correct procedure for submitting artwork as part of their application, asking, \"I just finished the piece I prepared for the application. I\u2019ll submit my application via the link first, and then upload my work here, right?\" This indicates a need for clearer guidance for new applicants.", "source": "SuperRare Chat & Application Boost", "link": "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd", "image": null, "dataBoxes": null}, {"category": "COMMUNITY|GENERAL", "headline": "GMeme Tradition Continues Across Waves", "summary": "The customary 'GMeme' greeting was prevalent across multiple waves, including 'SuperRare Chat & Application Boost' and 'The Memes - Main Stage', with users like Jungle_boy and awhurst initiating the morning ritual. This demonstrates the strong sense of community and established traditions within the 6529 ecosystem.", "source": "SuperRare Chat & Application Boost & The Memes - Main Stage", "link": "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd", "image": null, "dataBoxes": null}]`);
+    const NEWS_FALLBACK = [
+      {
+        category: "MAIN STAGE TOP 3",
+        headline: "#1 dangiuz Leads with 98.6M TDH",
+        summary: '#1 "Cogito, ergo sum" by dangiuz (98.6M TDH, 59 voters) | #17 "Network for Good" by BrynnAlise (4.0M TDH, 23 voters) | #51 "Farmacy" by MintFace (630K TDH, 2 voters)',
+        source: "The Memes - Main Stage",
+        link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
+        image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_9d8defd4-e381-42f7-b387-b9db2852ff7f/392a10e2-c774-4ab4-a1d4-3aed12b1ed27.jpg", label: "#1 Cogito, ergo sum - dangiuz"},
+        dataBoxes: [{label: "#1 dangiuz", value: "98.6M", sub: "TDH (59 votes)"}, {label: "#17 BrynnAlise", value: "4.0M", sub: "TDH (23 votes)"}, {label: "#51 MintFace", value: "630K", sub: "TDH (2 votes)"}]
+      },
+      {
+        category: "SUPERRARE TOP 3",
+        headline: "#1 Kostas_Photo Leads with 765K TDH",
+        summary: '#1 Kostas_Photo (765K TDH, 7 voters) | #2 awhurst (556K TDH, 11 voters) | #3 blake69 - WAGMI (301K TDH, 7 voters)',
+        source: "SuperRare x 6529",
+        link: "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd",
+        image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_5b7ea9c6-2ca3-48a3-a5ee-79a7cc7ce359/b54609c2-b0de-42e5-9916-523036e874d4.JPG", label: "#1 Kostas_Photo"},
+        dataBoxes: [{label: "#1 Kostas_Photo", value: "765K", sub: "TDH (7 votes)"}, {label: "#2 awhurst", value: "556K", sub: "TDH (11 votes)"}, {label: "#3 blake69", value: "301K", sub: "TDH (7 votes)"}]
+      },
+      {
+        category: "COMMUNITY",
+        headline: "6529 Veteran Describes TDH Millionaire Paradox",
+        summary: 'Blocknoob in the dive bar: "Being a TDH multi-millionaire translates to zero value outside of the community." His wife walked out after the explanation.',
+        source: "maybe's dive bar",
+        link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
+        image: null, dataBoxes: null
+      },
+      {
+        category: "MARKET",
+        headline: "TDH Price Discussions Heat Up in the Dive Bar",
+        summary: 'Users expressed disbelief at TDH valuation. dangiuz commented: "100M TDH? you guys are crazy." Growing discussion around perceived value within the 6529 community.',
+        source: "maybe's dive bar",
+        link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
+        image: null, dataBoxes: null
+      },
+      {
+        category: "ART",
+        headline: "Artists Express Gratitude for Votes and REP on Main Stage",
+        summary: 'Multiple artists thanked voters for support. Minotaur_Man: "Many thanks for the REP." Community engagement and recognition continue to drive the 6529 art scene.',
+        source: "The Memes - Main Stage",
+        link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
+        image: null, dataBoxes: null
+      },
+      {
+        category: "ART",
+        headline: "Longexposure Shares Atmospheric Artwork on Main Stage",
+        summary: 'Artist longexposure posted a piece depicting a lone caravan in a desolate landscape, described as a "testament to resilience" emphasizing themes of isolation and perseverance.',
+        source: "The Memes - Main Stage",
+        link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
+        image: null, dataBoxes: null
+      }
+    ];
 
     let NEWS = [...NEWS_FALLBACK];
     const CARD_DURATION = 8000;
