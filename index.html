@@ -319,6 +319,85 @@
   .side-l { position: absolute; left: 0; top: 114px; bottom: 130px; width: 4px; z-index: 12; background: linear-gradient(180deg, #cc2200, rgba(204,34,0,0.05), #cc2200); }
   .side-r { position: absolute; right: 0; top: 114px; bottom: 130px; width: 4px; z-index: 12; background: linear-gradient(180deg, rgba(80,140,255,0.08), rgba(80,140,255,0.03), rgba(80,140,255,0.08)); }
 
+  /* === USERNAME HIGHLIGHT === */
+  .username { color: #ffcc00; font-weight: 600; }
+
+  /* === INTRO OVERLAY === */
+  .intro-overlay {
+    position: absolute; inset: 0; z-index: 100;
+    background: radial-gradient(circle at 50% 50%, #0a1428, #040810);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    transition: opacity 0.6s ease;
+  }
+  .intro-overlay.fade-out { opacity: 0; pointer-events: none; }
+  .intro-overlay.hidden { display: none; }
+
+  .intro-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(80,140,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(80,140,255,0.04) 1px, transparent 1px);
+    background-size: 36px 36px;
+    opacity: 0; animation: introFadeIn 0.4s 0.1s ease-out forwards;
+  }
+
+  .intro-ring {
+    position: absolute; border: 1px solid rgba(80,140,255,0.08); border-radius: 50%;
+    opacity: 0; animation: introRingSpin 20s linear infinite, introFadeIn 0.6s ease-out forwards;
+  }
+  .intro-ring-1 { width: 500px; height: 500px; }
+  .intro-ring-2 { width: 600px; height: 600px; animation-delay: 0.15s; animation-duration: 25s; }
+  .intro-ring-3 { width: 700px; height: 700px; border-style: dashed; border-color: rgba(80,140,255,0.04); animation-delay: 0.25s; animation-duration: 30s; }
+  @keyframes introRingSpin { to { transform: rotate(360deg); } }
+  @keyframes introFadeIn { to { opacity: 1; } }
+
+  .intro-red-line {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 0; height: 4px; background: #cc2200; z-index: 5;
+    animation: introLineGrow 0.4s 0.4s ease-out forwards;
+    box-shadow: 0 0 20px rgba(204,34,0,0.4);
+  }
+  @keyframes introLineGrow { to { width: 800px; } }
+
+  .intro-flash {
+    position: absolute; inset: 0; background: rgba(255,255,255,0.7);
+    opacity: 0; pointer-events: none; z-index: 10;
+    animation: introFlash 0.2s 0.7s ease-out forwards;
+  }
+  @keyframes introFlash { 0% { opacity: 0.6; } 100% { opacity: 0; } }
+
+  .intro-logo {
+    position: relative; z-index: 15; text-align: center;
+    opacity: 0; transform: scale(0.8);
+    animation: introLogoIn 0.3s 0.7s ease-out forwards;
+  }
+  @keyframes introLogoIn { to { opacity: 1; transform: scale(1); } }
+
+  .intro-logo-row { display: flex; align-items: center; justify-content: center; }
+  .intro-6529 {
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 120px; color: #fff;
+    background: linear-gradient(180deg, #cc2200, #991100); padding: 0 24px; line-height: 0.9;
+    letter-spacing: 2px;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.3), inset 0 4px 0 rgba(255,255,255,0.1), 0 0 40px rgba(204,34,0,0.3);
+  }
+  .intro-news-text {
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 120px; color: #fff;
+    letter-spacing: 8px; margin-left: 16px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 40px rgba(80,140,255,0.1);
+  }
+  .intro-subtitle {
+    font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 22px;
+    color: rgba(255,255,255,0.4); letter-spacing: 12px; text-transform: uppercase;
+    margin-top: 16px; opacity: 0;
+    animation: introFadeIn 0.4s 1.2s ease-out forwards;
+  }
+
+  .intro-scanlines {
+    position: absolute; inset: 0; z-index: 50; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  }
+
   /* Auto-scale */
   @media screen {
     .container {
@@ -329,6 +408,24 @@
 </head>
 <body>
 <div class="container" id="container">
+  <!-- INTRO OVERLAY -->
+  <div class="intro-overlay" id="introOverlay">
+    <div class="intro-grid"></div>
+    <div class="intro-ring intro-ring-1"></div>
+    <div class="intro-ring intro-ring-2"></div>
+    <div class="intro-ring intro-ring-3"></div>
+    <div class="intro-red-line"></div>
+    <div class="intro-flash"></div>
+    <div class="intro-scanlines"></div>
+    <div class="intro-logo">
+      <div class="intro-logo-row">
+        <span class="intro-6529">6529</span>
+        <span class="intro-news-text">NEWS</span>
+      </div>
+      <div class="intro-subtitle">Decentralized News Powered by TDH</div>
+    </div>
+  </div>
+
   <div class="bg"></div>
   <div class="scanlines"></div>
   <div class="side-l"></div>
@@ -401,6 +498,29 @@
   }
   window.addEventListener('resize', scaleContainer);
   scaleContainer();
+
+  // === INTRO: fade out after 3.4s, remove at 4s ===
+  setTimeout(() => {
+    const intro = document.getElementById('introOverlay');
+    if (intro) {
+      intro.classList.add('fade-out');
+      setTimeout(() => intro.classList.add('hidden'), 600);
+    }
+  }, 3400);
+
+  // === HIGHLIGHT USERNAMES ===
+  // Wraps @mentions and known patterns like "by username" in yellow spans
+  function highlightUsernames(text) {
+    if (!text) return '';
+    // Highlight @[username] or @username patterns
+    text = text.replace(/@\[?([A-Za-z0-9_]+)\]?/g, '<span class="username">$1</span>');
+    // Highlight "by Username" pattern (capital letter after "by ")
+    text = text.replace(/\bby\s+([A-Z][A-Za-z0-9_]+)/g, 'by <span class="username">$1</span>');
+    // Highlight known 6529 handles pattern: "Username:" at start of quotes
+    text = text.replace(/(^|\| |: )([A-Z][a-z]+[A-Za-z0-9_]*)(:|'s|,| said| commented| posted)/g,
+      '$1<span class="username">$2</span>$3');
+    return text;
+  }
 
   // === NEWS DATA ===
   const NEWS_URL = 'https://raw.githubusercontent.com/sertx92/memes24h/main/data/news-latest.json';
@@ -529,9 +649,9 @@
         <div class="card-cat-bar"><div class="card-cat">${item.category}</div><div class="card-cat-line"></div></div>
         <div class="card-body">
           ${imageHTML}
-          <div class="card-headline">${item.headline}</div>
+          <div class="card-headline">${highlightUsernames(item.headline)}</div>
           <div class="card-divider"></div>
-          <div class="card-summary">${item.summary}</div>
+          <div class="card-summary">${highlightUsernames(item.summary)}</div>
           <div class="card-source"><div class="source-dot"></div><div class="source-text">${item.source || ''}</div>${linkHTML}</div>
           ${dataHTML}
         </div>
