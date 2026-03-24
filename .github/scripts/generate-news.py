@@ -22,6 +22,12 @@ MIN_MSGS_6H = 3  # Minimum messages in 6 hours to be newsworthy
 
 MEMES_WAVE_ID = 'b6128077-ea78-4dd9-b381-52c4eadb2077'
 SR_WAVE_ID = 'd22e3046-a00e-48b9-b245-a339a44c37cd'
+TDH_MILLIONAIRES_WAVE_ID = '9cc8118b-0ae0-4b22-8d15-3b8ed6604bac'
+
+# punk6529 tracking
+PUNK6529_HANDLE = 'punk6529'
+PUNK6529_PFP = 'https://d3lqz0a4bldqgf.cloudfront.net/pfp/production/413e24a8-b2d2-4746-a10e-d66575d0043f.webp?d=1714229232938'
+PUNK6529_MIN_MSGS = 5  # 5+ msgs in 6h = "6529 Talks about"
 
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data', 'waves-config.json')
 
@@ -422,6 +428,122 @@ def update_gist(output):
 
 
 # =============================================
+# PUNK6529 TRACKING
+# =============================================
+
+def build_punk6529_news():
+    """Track punk6529's activity. If 5+ msgs in 6h: '6529 Talks about'. Otherwise: last seen."""
+    print("Tracking punk6529...")
+    news = []
+
+    # Get punk6529's recent drops across all waves
+    drops = fetch_json(f'https://api.6529.io/api/drops?author={PUNK6529_HANDLE}&limit=20')
+    if not drops:
+        return news
+
+    now_ms = datetime.now(timezone.utc).timestamp() * 1000
+    six_h_ago = now_ms - 6 * 3600 * 1000
+    twenty_four_h_ago = now_ms - 24 * 3600 * 1000
+
+    recent_6h = [d for d in drops if d['created_at'] > six_h_ago]
+    recent_24h = [d for d in drops if d['created_at'] > twenty_four_h_ago]
+
+    if len(recent_6h) >= PUNK6529_MIN_MSGS:
+        # 6529 is actively talking - summarize what about
+        messages = []
+        topics = set()
+        for d in recent_6h[:10]:
+            parts = d.get('parts', [])
+            content = (parts[0].get('content') or '')[:200] if parts else ''
+            wave_name = d.get('wave', {}).get('name', '?')
+            if content:
+                messages.append(content)
+                topics.add(wave_name)
+
+        # Pick best quotes (skip very short ones)
+        best_quotes = [m for m in messages if len(m) > 30][:3]
+        quote_text = ' | '.join([f'"{q[:100]}"' for q in best_quotes])
+
+        news.append({
+            'category': '6529 TALKS',
+            'headline': f'6529 Talks About: {len(recent_6h)} Messages in the Last 6 Hours',
+            'summary': f'punk6529 has been active in {", ".join(topics)}. {quote_text}',
+            'source': list(topics)[0] if topics else 'Network',
+            'link': 'https://6529.io/punk6529',
+            'image': {'url': PUNK6529_PFP, 'label': 'punk6529'},
+            'dataBoxes': None
+        })
+        print(f"  6529 active: {len(recent_6h)} msgs in 6h")
+
+    elif recent_24h:
+        # Active in last 24h but not heavily - skip (not newsworthy)
+        print(f"  6529 mildly active: {len(recent_24h)} msgs in 24h (below threshold)")
+
+    else:
+        # Not active in 24h - show last seen
+        if drops:
+            last = drops[0]
+            last_ts = last['created_at'] / 1000
+            last_dt = datetime.fromtimestamp(last_ts, tz=timezone.utc)
+            last_wave = last.get('wave', {}).get('name', 'unknown')
+            time_str = last_dt.strftime('%b %d, %H:%M UTC')
+
+            news.append({
+                'category': '6529 STATUS',
+                'headline': f'6529 Last Seen in {last_wave}',
+                'summary': f'punk6529 was last active on {time_str} in "{last_wave}". No messages in the last 24 hours.',
+                'source': last_wave,
+                'link': 'https://6529.io/punk6529',
+                'image': {'url': PUNK6529_PFP, 'label': 'punk6529 - last seen'},
+                'dataBoxes': None
+            })
+            print(f"  6529 inactive: last seen {time_str}")
+
+    return news
+
+
+def build_tdh_millionaires_news():
+    """TDH Millionaires wave - only if 10+ msgs in 6h."""
+    print("Checking TDH Millionaires wave...")
+    drops = fetch_6529_drops(TDH_MILLIONAIRES_WAVE_ID, 20)
+    if not drops:
+        print("  Wave restricted or empty")
+        return []
+
+    now_ms = datetime.now(timezone.utc).timestamp() * 1000
+    six_h_ago = now_ms - 6 * 3600 * 1000
+    recent = [d for d in drops if d['created_at'] > six_h_ago]
+
+    if len(recent) < 10:
+        print(f"  Only {len(recent)} msgs in 6h (need 10+)")
+        return []
+
+    # Gather discussion topics
+    messages = []
+    authors = set()
+    for d in recent[:15]:
+        parts = d.get('parts', [])
+        content = (parts[0].get('content') or '')[:150] if parts else ''
+        author = d.get('author', {}).get('handle', '?')
+        if content and len(content) > 20:
+            messages.append(f'{author}: "{content}"')
+            authors.add(author)
+
+    summary = f'{len(recent)} messages in the last 6 hours from {len(authors)} TDH millionaires. ' + ' | '.join(messages[:3])
+
+    print(f"  Active: {len(recent)} msgs, {len(authors)} participants")
+    return [{
+        'category': 'TDH MILLIONAIRES',
+        'headline': f'TDH Millionaires Talk: {len(recent)} Messages, {len(authors)} Participants',
+        'summary': summary,
+        'source': 'Memes Talk - 1M TDH',
+        'link': 'https://6529.io/waves/9cc8118b-0ae0-4b22-8d15-3b8ed6604bac',
+        'image': None,
+        'dataBoxes': None
+    }]
+
+
+# =============================================
 # MAIN
 # =============================================
 
@@ -456,7 +578,13 @@ def main():
     print("\n--- Fixed: Top 3 SuperRare ---")
     sr_top3 = build_top3_leaderboard(SR_WAVE_ID, 'SuperRare x 6529', 'SUPERRARE TOP 3')
 
-    fixed_news = market_news + memes_top3 + sr_top3
+    print("\n--- Fixed: punk6529 Status ---")
+    punk6529_news = build_punk6529_news()
+
+    print("\n--- Fixed: TDH Millionaires ---")
+    tdh_mill_news = build_tdh_millionaires_news()
+
+    fixed_news = market_news + memes_top3 + sr_top3 + punk6529_news + tdh_mill_news
 
     # ---- VARIABLE NEWS (AI-generated) ----
     print("\n--- Gathering wave activity (min 3 msgs/6h) ---")

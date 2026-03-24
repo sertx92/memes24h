@@ -108,16 +108,7 @@
   }
   @keyframes subIn { to { opacity: 1; } }
 
-  /* 24H badge */
-  .badge-24h {
-    display: inline-block;
-    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 28px;
-    color: #ffcc00; background: rgba(0,0,0,0.5);
-    padding: 2px 16px; margin-top: 20px;
-    border: 1px solid rgba(255,204,0,0.3);
-    letter-spacing: 4px; opacity: 0;
-    animation: subIn 0.6s 3s ease-out forwards;
-  }
+  /* removed badge-24h */
 
   /* Checkmark from Card #103 style */
   .check-icon {
@@ -223,19 +214,28 @@
       <span class="logo-6529">6529</span>
       <span class="logo-news-text">NEWS</span>
     </div>
-    <div class="subtitle">Decentralized News Network</div>
-    <div class="badge-24h">24H LIVE</div>
+    <div class="subtitle">Decentralized News Powered by TDH</div>
   </div>
 
   <div class="bottom-preview">
     <div class="bp-headline">
       <div class="bp-label">NEWS</div>
-      <div class="bp-text">BREAKING: DECENTRALIZED NEWS POWERED BY TDH GOVERNANCE</div>
+      <div class="bp-text">DECENTRALIZED NEWS POWERED BY TDH</div>
     </div>
     <div class="bp-ticker">
       <span class="bp-ticker-label">MARKET</span>
       <span class="bp-ticker-scroll">MEMES #1 dangiuz 98.6M TDH | SR #1 Kostas_Photo 765K TDH | 6529 DECENTRALIZED NEWS NETWORK</span>
     </div>
   </div>
+<script>
+  // After 7 seconds, fade out and redirect to news
+  setTimeout(() => {
+    document.body.style.transition = 'opacity 0.8s';
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 800);
+  }, 7000);
+</script>
 </body>
 </html>
