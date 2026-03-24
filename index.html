@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEMES 24H</title>
+<title>6529 NEWS 24H</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Teko:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 
@@ -102,42 +102,43 @@
   .logo {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 0;
   }
 
-  .logo-m {
+  .logo-num {
     font-family: 'Teko', sans-serif;
     font-weight: 700;
-    font-size: 36px;
+    font-size: 38px;
     color: #fff;
     background: linear-gradient(180deg, #cc2200, #991100);
-    padding: 0 8px;
+    padding: 0 10px;
     line-height: 1;
-    letter-spacing: -1px;
+    letter-spacing: 1px;
     text-shadow: 1px 1px 0 #660000;
     box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1);
   }
 
-  .logo-text {
+  .logo-news {
     font-family: 'Teko', sans-serif;
     font-weight: 700;
-    font-size: 36px;
+    font-size: 38px;
     color: #fff;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-    margin-left: 4px;
+    margin-left: 6px;
   }
 
   .logo-24h {
     font-family: 'Teko', sans-serif;
     font-weight: 600;
-    font-size: 18px;
+    font-size: 16px;
     color: #ffcc00;
     background: rgba(0,0,0,0.3);
-    padding: 2px 8px;
-    margin-left: 8px;
+    padding: 1px 8px;
+    margin-left: 10px;
     border: 1px solid rgba(255,204,0,0.3);
     letter-spacing: 2px;
+    align-self: center;
   }
 
   /* Right side of top bar */
@@ -330,9 +331,9 @@
     color: #ffffff;
     font-family: 'Oswald', sans-serif;
     font-weight: 700;
-    font-size: 34px;
+    font-size: 30px;
     line-height: 1.15;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     text-transform: uppercase;
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     opacity: 0;
@@ -365,10 +366,10 @@
 
   /* Summary */
   .card-summary {
-    color: rgba(200,210,230,0.6);
+    color: rgba(200,210,230,0.55);
     font-family: 'Oswald', sans-serif;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.5;
     opacity: 0;
   }
@@ -669,8 +670,16 @@
     color: #ffffff;
   }
 
+  /* Color-coded ticker items */
+  .ticker-memes .ticker-item-label { color: #cc4422; }
+  .ticker-memes .ticker-item-value { color: #ff6644; }
+  .ticker-sr .ticker-item-label { color: #8844cc; }
+  .ticker-sr .ticker-item-value { color: #aa66ff; }
+  .ticker-market .ticker-item-label { color: rgba(255,204,0,0.6); }
+  .ticker-market .ticker-item-value { color: #ffcc00; }
+
   .ticker-separator {
-    color: rgba(100,160,255,0.15);
+    color: rgba(100,160,255,0.12);
     font-size: 16px;
     flex-shrink: 0;
   }
@@ -703,7 +712,8 @@
   <!-- Top Chrome Bar -->
   <div class="top-chrome">
     <div class="logo">
-      <span class="logo-m">MEMES</span>
+      <span class="logo-num">6529</span>
+      <span class="logo-news">NEWS</span>
       <span class="logo-24h">24H</span>
     </div>
     <div class="top-right">
@@ -750,12 +760,12 @@
     <div class="ticker-label">MARKET</div>
     <div class="ticker-track">
       <div class="ticker-content" id="tickerContent">
-        <div class="ticker-item"><span class="ticker-item-label">Memes #1</span><span class="ticker-item-value">dangiuz 98.6M TDH</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K TDH</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item"><span class="ticker-item-label">MEMES 24H</span><span class="ticker-item-value">Decentralized News</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item"><span class="ticker-item-label">Memes #1</span><span class="ticker-item-value">dangiuz 98.6M TDH</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K TDH</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item"><span class="ticker-item-label">MEMES 24H</span><span class="ticker-item-value">Decentralized News</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #1</span><span class="ticker-item-value">dangiuz 98.6M TDH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K TDH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">6529 NEWS</span><span class="ticker-item-value">Decentralized News</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #1</span><span class="ticker-item-value">dangiuz 98.6M TDH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K TDH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">6529 NEWS</span><span class="ticker-item-value">Decentralized News</span></div><div class="ticker-separator">|</div>
       </div>
     </div>
   </div>
@@ -795,9 +805,15 @@
     function updateTickerFromData(tickerItems) {
       const el = document.getElementById('tickerContent');
       if (!el) return;
-      const html = tickerItems.map(t =>
-        `<div class="ticker-item"><span class="ticker-item-label">${t.label}</span><span class="ticker-item-value">${t.value}</span></div><div class="ticker-separator">|</div>`
-      ).join('');
+      const html = tickerItems.map(t => {
+        // Auto-detect color class from label
+        let cls = '';
+        const lbl = (t.label || '').toLowerCase();
+        if (lbl.includes('memes') || lbl.includes('meme')) cls = 'ticker-memes';
+        else if (lbl.includes('sr') || lbl.includes('super') || lbl.includes('rare')) cls = 'ticker-sr';
+        else if (lbl.includes('floor') || lbl.includes('vol') || lbl.includes('market') || lbl.includes('pebble')) cls = 'ticker-market';
+        return `<div class="ticker-item ${cls}"><span class="ticker-item-label">${t.label}</span><span class="ticker-item-value">${t.value}</span></div><div class="ticker-separator">|</div>`;
+      }).join('');
       el.innerHTML = html + html;
       el.style.animation = 'none';
       el.offsetHeight;
