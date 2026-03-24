@@ -284,20 +284,26 @@
     letter-spacing: 2px; display: flex; align-items: center; padding: 0 16px;
     border-right: 2px solid rgba(204,34,0,0.4);
   }
-  .ticker-track { flex: 1; overflow: hidden; display: flex; align-items: center; }
-  .ticker-content { display: flex; align-items: center; white-space: nowrap; animation: tickerScroll 50s linear infinite; }
-  @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-  .ticker-item { display: flex; align-items: center; gap: 10px; padding: 0 24px; flex-shrink: 0; }
+  .ticker-track { flex: 1; overflow: hidden; display: flex; align-items: center; position: relative; }
+  .ticker-content {
+    display: flex; align-items: center; white-space: nowrap;
+    animation: tickerScroll 60s linear infinite;
+    position: absolute; left: 0;
+  }
+  @keyframes tickerScroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 0 20px; flex-shrink: 0; }
   .ticker-item-label {
-    font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 500;
+    font-family: 'Teko', sans-serif; font-size: 14px; font-weight: 600;
     letter-spacing: 1.5px; color: rgba(80,160,255,0.4); text-transform: uppercase;
   }
-  .ticker-item-value { font-family: 'Teko', sans-serif; font-size: 22px; font-weight: 600; color: #ffffff; }
-  .ticker-memes .ticker-item-label { color: #ff5533; font-size: 14px; font-weight: 600; }
-  .ticker-sr .ticker-item-label { color: #aa66ff; font-size: 14px; font-weight: 600; }
+  .ticker-item-value { font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 500; color: #ffffff; }
+  .ticker-memes .ticker-item-label { color: #ff5533; font-size: 16px; }
+  .ticker-memes .ticker-item-value { color: #ffffff; }
+  .ticker-sr .ticker-item-label { color: #aa66ff; font-size: 16px; }
+  .ticker-sr .ticker-item-value { color: #ffffff; }
   .ticker-market .ticker-item-label { color: rgba(255,204,0,0.6); }
   .ticker-market .ticker-item-value { color: #ffcc00; }
-  .ticker-separator { color: rgba(80,140,255,0.1); font-size: 18px; flex-shrink: 0; }
+  .ticker-separator { color: rgba(80,140,255,0.1); font-size: 18px; flex-shrink: 0; padding: 0 4px; }
 
   .ticker-brand { display: flex; align-items: center; padding: 0 28px; flex-shrink: 0; }
   .ticker-brand-badge {
