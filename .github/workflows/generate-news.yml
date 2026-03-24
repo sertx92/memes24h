@@ -24,10 +24,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/generate-news.py
 
+      - name: Update hardcoded fallback in HTML
+        run: python .github/scripts/update-fallback.py
+
       - name: Commit updated news
         run: |
           git config user.name "MEMES24H Bot"
           git config user.email "bot@memes24h.xyz"
-          git add data/news-latest.json
-          git diff --staged --quiet || git commit -m "Daily news: $(date -u +%Y-%m-%d_%H:%M)"
+          git add data/news-latest.json index.html
+          git diff --staged --quiet || git commit -m "News update: $(date -u +%Y-%m-%d_%H:%M)"
           git push || echo "Nothing to push"

@@ -761,118 +761,43 @@
     const NEWS_URL = 'https://gist.githubusercontent.com/sertx92/1b84f8b762cd2f6640ed7086cc9b7c69/raw/news-latest.json';
     const NEWS_FALLBACK = [
       {
-        category: 'MARKET',
-        headline: '"Molly Wop" Sells for 0.069 ETH — 15 Sales Today',
-        summary: 'Daily volume hits 1.21 ETH across 15 trades. Notable sales include "Open Roads, Open Metaverse" at 0.08 ETH and a double sale of "no, really this is going to be our year" at 0.18-0.19 ETH.',
-        source: 'OpenSea',
-        link: 'https://opensea.io/collection/thememes6529',
-        image: null,
-        dataBoxes: [
-          { label: 'Floor', value: '0.0139', sub: 'ETH' },
-          { label: '24h Vol', value: '1.21', sub: 'ETH' },
-          { label: '7d Vol', value: '10.64', sub: 'ETH' },
-          { label: 'Sales', value: '15', sub: 'Today' }
-        ]
-      },
-      {
         category: 'MAIN STAGE',
-        headline: 'QuantumSpirit Submits "Cerebrum" — Glitch Art Enters The Vote',
-        summary: 'A signature glitch aesthetic exploring digital distortion and memory. Created with Midjourney AI and Photoshop, inspired by flowers at night reimagined through layered distortions.',
-        source: 'The Memes Main Stage',
-        link: 'https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077?drop=642e968d-a16a-4815-89e6-ab460fbdcc05',
-        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_98fae5a8-cdd6-4e70-8bf7-d34acbc20caf/7098c351-16b4-4829-aca9-baa6dd957a36.gif', label: 'Cerebrum — QuantumSpirit' },
-        dataBoxes: null
-      },
-      {
-        category: 'MAIN STAGE',
-        headline: 'blake69 Submits "Unverified Identity" to Main Stage',
-        summary: 'A new entry in the ongoing vote for The Memes. The community continues to grow with fresh artistic perspectives joining the decentralized curation process.',
-        source: 'The Memes Main Stage',
-        link: 'https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077?drop=e70ee4e9-f9be-4b72-ae1b-9163589ba6ee',
-        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_e04c764b-3eb4-11ef-9d82-029a0e4b6159/31115919-6b77-40bc-9ac5-410074bc0dd4.png', label: 'Unverified Identity — blake69' },
-        dataBoxes: null
-      },
-      {
-        category: 'MAIN STAGE',
-        headline: 'Top Race: david Leads with 65.2M TDH — RegularDad Has Most Voters',
-        summary: '#1 "An Intro to 6529" by david holds at 65.2M TDH (52 voters). #6 "Karen\'s Lousy T-shirt" by RegularDad at 10.3M TDH but leads in voter count with 63! #10 "Enchanted Objects" by maybe at 6.4M TDH.',
-        source: 'The Memes Main Stage',
+        headline: '#1 dangiuz Leads with 93.7M TDH',
+        summary: '#1 "Cogito, ergo sum" by dangiuz (93.7M TDH, 52 voters) | #20 "Network for Good " by BrynnAlise (4.0M TDH, 19 voters) | #1 "None" by Kostas_Photo (765K TDH, 7 voters)',
+        source: 'The Memes - Main Stage',
         link: 'https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077',
-        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_0f8321c5-87b4-11ee-9d82-029a0e4b6159/0dd319ca-3ab0-4857-8dbf-aa0bdc2da01f.jpeg', label: "#6 Karen's T-shirt — RegularDad" },
+        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_9d8defd4-e381-42f7-b387-b9db2852ff7f/392a10e2-c774-4ab4-a1d4-3aed12b1ed27.jpg', label: '#1 Cogito, ergo sum' },
         dataBoxes: [
-          { label: '#1 david', value: '65.2M', sub: 'TDH (52 votes)' },
-          { label: '#6 RegularDad', value: '10.3M', sub: 'TDH (63 votes)' },
-          { label: '#10 maybe', value: '6.4M', sub: 'TDH (40 votes)' },
-          { label: '#14 fercaggiano', value: '3.9M', sub: 'TDH (23 votes)' }
-        ]
-      },
-      {
-        category: 'WHALE ALERT',
-        headline: 'Mystery Whale 0x7d88 Accumulates 15 Memes + 4 Pebbles',
-        summary: 'An unidentified wallet (0x7d88f2...e0b6) has been aggressively buying: 15 Memes purchases totaling 0.877 ETH and 4 Pebbles including a 1.4 ETH and 2.2 ETH buy. No 6529 profile — a new collector entering the ecosystem.',
-        source: 'OpenSea + 6529 API',
-        link: 'https://opensea.io/0x7d88f2e2e68e09e7b7aa35c9b2ece3e0e898e0b6',
-        image: null,
-        dataBoxes: [
-          { label: 'Memes Buys', value: '15', sub: '0.877 ETH' },
-          { label: 'Pebbles Buys', value: '4', sub: '5.5 ETH' },
-          { label: '6529 Profile', value: 'None', sub: 'Unknown' },
-          { label: 'TDH', value: '0', sub: 'New Collector' }
+          { label: '#1 dangiuz', value: '93.7M', sub: 'TDH (52 votes)' },
+          { label: '#20 BrynnAlise', value: '4.0M', sub: 'TDH (19 votes)' },
+          { label: '#1 Kostas_Photo', value: '765K', sub: 'TDH (7 votes)' }
         ]
       },
       {
         category: 'COMMUNITY',
-        headline: 'AEZY: "6529 Isn\'t Social Media — It\'s a Network"',
-        summary: '"Found a lot of energy and inspiration recently by avoiding most of Twitter timeline. 6529 isn\'t social media to me, it\'s a network where we network." — The art lives in the details.',
-        source: "maybe's dive bar",
-        link: 'https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e?drop=fb330615-b2c5-4e92-926e-60f572c4d010',
+        headline: 'Active Discussion in maybe\'s dive bar',
+        summary: '20 messages in the last hour. Latest: eddie: i seized more of my card, was discussing with @[RegularDad], would be easier accounting-wise if artists could jus',
+        source: 'maybe\'s dive bar',
+        link: 'https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e',
         image: null,
         dataBoxes: null
       },
       {
-        category: 'CULTURE',
-        headline: '"Larpmaxxing" — DeltaSauce Coins New Web3 Term',
-        summary: 'Sunday buzz in the dive bar: new auctions launched by RonnyGuy, blake69 working on new submissions, and the community debates the loss of nuance in crypto culture.',
-        source: "maybe's dive bar",
-        link: 'https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e?drop=8dc8abf8-9039-421d-81fb-8e74e7d573d5',
+        category: 'COMMUNITY',
+        headline: 'Active Discussion in The Memes - Main Stage',
+        summary: '14 messages in the last hour. Latest: Burnasso: THANKS for The Votes, I’m Totally Surprised, @[johndoe8891]...!! I’m Touched and Honored...!! 🐧❤️',
+        source: 'The Memes - Main Stage',
+        link: 'https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077',
         image: null,
         dataBoxes: null
       },
       {
-        category: 'MARKET',
-        headline: 'Pebbles by Zeblocks Hold Strong at 0.595 ETH Floor',
-        summary: '445 holders maintain positions with 1.4 ETH weekly volume. Total Memes lifetime volume: 26,787 ETH across 94,428 trades and 10,518 unique holders.',
-        source: 'OpenSea',
-        link: 'https://opensea.io/collection/pebbles-by-zeblocks',
-        image: null,
-        dataBoxes: [
-          { label: 'Pebbles Floor', value: '0.595', sub: 'ETH' },
-          { label: 'Pebbles Holders', value: '445', sub: '' },
-          { label: 'Memes Lifetime', value: '26,787', sub: 'ETH Volume' },
-          { label: 'Total Sales', value: '94,428', sub: 'All Time' }
-        ]
-      },
-      {
-        category: 'SUPERRARE x 6529',
-        headline: 'JasonOPhoto Leads SuperRare Boost with 2.07M TDH',
-        summary: 'The SuperRare x 6529 application wave heats up. JasonOPhoto\'s "The Wanderer" leads with 2.07M TDH (11 voters), followed by Articulate at 1.4M TDH and Zigmarillion\'s "Two sides to the same story" at 1.18M TDH.',
+        category: 'COMMUNITY',
+        headline: 'Active Discussion in SuperRare Chat & Application Boost',
+        summary: '1 messages in the last hour. Latest: AshtonTekno: gm sr frens!',
         source: 'SuperRare Chat & Application Boost',
         link: 'https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd',
-        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_746dccd5-fdc4-4243-a54d-c981ff5ba461/31b825aa-23bc-47f0-ab89-cd850a4d94d8.jpg', label: '#5 The Wanderer — JasonOPhoto' },
-        dataBoxes: [
-          { label: '#5 JasonOPhoto', value: '2.07M', sub: 'TDH (11 votes)' },
-          { label: '#6 Articulate', value: '1.4M', sub: 'TDH (11 votes)' },
-          { label: '#7 Zigmarillion', value: '1.18M', sub: 'TDH (12 votes)' },
-          { label: '#2 Kostas_Photo', value: '685K', sub: 'TDH (6 votes)' }
-        ]
-      },
-      {
-        category: 'SUPERRARE x 6529',
-        headline: 'blake69 Submits "The Unstable Wave" — Leads SR Rankings',
-        summary: '"The wave no longer exists as a fixed image, but as a condition, something perpetually shifting." blake69 also submitted "WAGMI" (#4, 301K TDH). Active community with GM culture thriving.',
-        source: 'SuperRare Chat & Application Boost',
-        link: 'https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd?drop=2d6beb86-7bff-4478-9d11-0c2a0bb1e55e',
-        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_e04c764b-3eb4-11ef-9d82-029a0e4b6159/e9fba321-c205-4ca5-83fa-8d7eadd56b96.png', label: 'The Unstable Wave — blake69' },
+        image: null,
         dataBoxes: null
       }
     ];
