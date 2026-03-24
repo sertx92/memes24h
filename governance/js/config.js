@@ -43,6 +43,11 @@ export const CONFIG = {
     ]
   },
 
+  // GitHub fine-grained PAT (issues:write only)
+  // This token can ONLY create issues. Safe to expose in client code.
+  // To rotate: create new fine-grained PAT with Repository > Issues > Write
+  GITHUB_TOKEN: '',  // Set this after creating the PAT
+
   // Cache TTLs (ms)
   CACHE_PROPOSALS_TTL: 5 * 60 * 1000,  // 5 min
   CACHE_PROFILE_TTL: 10 * 60 * 1000,   // 10 min

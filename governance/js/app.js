@@ -201,18 +201,38 @@ async function renderProposalDetail(id) {
 
   const actionLabel = proposal.action === 'add' ? 'Add Wave' : 'Remove Wave';
 
-  let voteButtons = '';
+  let voteSection = '';
   if (userIdentity && proposal.status === 'active' && !isExpired && !voted) {
-    voteButtons = `
-      <div class="vote-actions">
-        <button class="btn btn-yes" id="btnYes">Vote YES (${formatTDH(userIdentity.tdh)} TDH)</button>
-        <button class="btn btn-no" id="btnNo">Vote NO (${formatTDH(userIdentity.tdh)} TDH)</button>
+    voteSection = `
+      <div class="vote-panel">
+        <h3>Cast Your Vote</h3>
+        <div class="tdh-allocator">
+          <div class="tdh-allocator-header">
+            <label>TDH to allocate</label>
+            <span class="tdh-allocator-max">Max: ${formatTDH(userIdentity.tdh)}</span>
+          </div>
+          <div class="tdh-slider-row">
+            <input type="range" id="tdhSlider" min="1" max="${userIdentity.tdh}" value="${userIdentity.tdh}" class="tdh-slider">
+            <input type="number" id="tdhInput" min="1" max="${userIdentity.tdh}" value="${userIdentity.tdh}" class="tdh-input">
+          </div>
+          <div class="tdh-presets">
+            <button class="btn btn-sm tdh-preset" data-pct="25">25%</button>
+            <button class="btn btn-sm tdh-preset" data-pct="50">50%</button>
+            <button class="btn btn-sm tdh-preset" data-pct="75">75%</button>
+            <button class="btn btn-sm tdh-preset" data-pct="100">100%</button>
+          </div>
+        </div>
+        <div class="vote-actions">
+          <button class="btn btn-yes" id="btnYes">Vote YES</button>
+          <button class="btn btn-no" id="btnNo">Vote NO</button>
+        </div>
+        <div id="voteStatus" class="vote-status"></div>
       </div>
     `;
   } else if (voted) {
-    voteButtons = '<div class="voted-msg">You have already voted on this proposal.</div>';
+    voteSection = '<div class="voted-msg">You have already voted on this proposal.</div>';
   } else if (!userIdentity) {
-    voteButtons = '<div class="voted-msg">Connect your wallet to vote.</div>';
+    voteSection = '<div class="voted-msg">Connect your wallet to vote.</div>';
   }
 
   app.innerHTML = `
@@ -260,7 +280,7 @@ async function renderProposalDetail(id) {
         </div>
       </div>
 
-      ${voteButtons}
+      ${voteSection}
 
       ${tally.votes.length > 0 ? `
         <div class="votes-list">
@@ -269,7 +289,7 @@ async function renderProposalDetail(id) {
             <div class="vote-item">
               <span class="vote-badge vote-${v.vote}">${v.vote.toUpperCase()}</span>
               <span class="vote-handle">${v.voterHandle || shortAddress(v.voter)}</span>
-              <span class="vote-tdh">${formatTDH(v.currentTDH)} TDH</span>
+              <span class="vote-tdh">${formatTDH(v.effectiveTDH || v.currentTDH)} TDH${v.allocatedTDH ? ' (allocated)' : ''}</span>
             </div>
           `).join('')}
         </div>
@@ -277,7 +297,25 @@ async function renderProposalDetail(id) {
     </div>
   `;
 
-  // Attach vote handlers
+  // TDH slider/input sync
+  const slider = document.getElementById('tdhSlider');
+  const input = document.getElementById('tdhInput');
+  if (slider && input) {
+    slider.addEventListener('input', () => { input.value = slider.value; });
+    input.addEventListener('input', () => { slider.value = input.value; });
+
+    // Preset buttons
+    document.querySelectorAll('.tdh-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pct = parseInt(btn.dataset.pct);
+        const val = Math.floor(userIdentity.tdh * pct / 100);
+        slider.value = val;
+        input.value = val;
+      });
+    });
+  }
+
+  // Vote handlers
   const btnYes = document.getElementById('btnYes');
   const btnNo = document.getElementById('btnNo');
   if (btnYes) btnYes.addEventListener('click', () => handleVote(id, 'yes'));
@@ -285,10 +323,38 @@ async function renderProposalDetail(id) {
 }
 
 async function handleVote(proposalId, vote) {
+  const statusEl = document.getElementById('voteStatus');
+  const tdhInput = document.getElementById('tdhInput');
+  const allocatedTDH = tdhInput ? parseInt(tdhInput.value) : userIdentity.tdh;
+
+  // Disable buttons
+  const btnYes = document.getElementById('btnYes');
+  const btnNo = document.getElementById('btnNo');
+  if (btnYes) btnYes.disabled = true;
+  if (btnNo) btnNo.disabled = true;
+
+  if (statusEl) statusEl.innerHTML = '<span class="status-pending">Signing with wallet...</span>';
+
   try {
-    await submitVote(proposalId, vote);
-    showToast('Vote submitted! It will be processed by GitHub Actions.', 'success');
+    const result = await submitVote(proposalId, vote, allocatedTDH);
+
+    if (result.issue?.fallback) {
+      if (statusEl) statusEl.innerHTML = '<span class="status-info">Redirected to GitHub to complete submission.</span>';
+    } else {
+      if (statusEl) statusEl.innerHTML = `
+        <span class="status-success">
+          Vote submitted successfully! Allocating ${formatTDH(allocatedTDH)} TDH.
+          <br>Processing by GitHub Actions...
+          <a href="${result.issue?.html_url}" target="_blank">View Issue</a>
+        </span>
+      `;
+    }
+
+    showToast(`Vote ${vote.toUpperCase()} submitted with ${formatTDH(allocatedTDH)} TDH!`, 'success');
   } catch (err) {
+    if (statusEl) statusEl.innerHTML = `<span class="status-error">${err.message}</span>`;
+    if (btnYes) btnYes.disabled = false;
+    if (btnNo) btnNo.disabled = false;
     showToast(err.message, 'error');
   }
 }
@@ -337,6 +403,7 @@ async function renderCreateProposal() {
         <span class="form-cost">Your TDH: ${formatTDH(userIdentity.tdh)}</span>
         <button class="btn btn-primary" id="btnSubmitProposal">Sign & Submit Proposal</button>
       </div>
+      <div id="proposalStatus" class="vote-status" style="margin-top:16px"></div>
     </div>
   `;
 
@@ -364,11 +431,34 @@ async function renderCreateProposal() {
     if (!waveId) { showToast('Enter a wave ID', 'error'); return; }
     if (!reason) { showToast('Enter a reason', 'error'); return; }
 
+    const statusEl = document.getElementById('proposalStatus');
+    const btn = document.getElementById('btnSubmitProposal');
+    btn.disabled = true;
+    btn.textContent = 'Signing...';
+    if (statusEl) statusEl.innerHTML = '<span class="status-pending">Signing proposal with wallet...</span>';
+
     try {
-      await createProposal(action, waveId, reason);
-      showToast('Proposal submitted! It will be processed shortly.', 'success');
-      window.location.hash = '#/';
+      const result = await createProposal(action, waveId, reason);
+
+      if (result.issue?.fallback) {
+        if (statusEl) statusEl.innerHTML = '<span class="status-info">Redirected to GitHub to complete submission.</span>';
+        btn.disabled = false;
+        btn.textContent = 'Sign & Submit Proposal';
+      } else {
+        if (statusEl) statusEl.innerHTML = `
+          <span class="status-success">
+            Proposal submitted successfully!
+            <a href="${result.issue?.html_url}" target="_blank">View on GitHub</a>
+            <br>Redirecting to dashboard...
+          </span>
+        `;
+        showToast('Proposal submitted!', 'success');
+        setTimeout(() => { window.location.hash = '#/'; }, 2000);
+      }
     } catch (err) {
+      if (statusEl) statusEl.innerHTML = `<span class="status-error">${err.message}</span>`;
+      btn.disabled = false;
+      btn.textContent = 'Sign & Submit Proposal';
       showToast(err.message, 'error');
     }
   });

@@ -1,5 +1,5 @@
 // MEMES 24H Governance - Proposals Management
-// Read proposals from GitHub, create new ones via Issues
+// Creates proposals via GitHub Issues API (stays on-site)
 
 import { CONFIG, GITHUB_RAW, GITHUB_API } from './config.js';
 import { resolveIdentity, getTDH, verifyWave, formatTDH } from './api6529.js';
@@ -7,6 +7,35 @@ import { getAddress, signProposal } from './wallet.js';
 
 let proposalsCache = null;
 let proposalsCacheTs = 0;
+
+// Create a GitHub Issue via API (no redirect)
+async function createGitHubIssue(title, body, labels) {
+  const token = CONFIG.GITHUB_TOKEN;
+
+  if (!token) {
+    // Fallback: open GitHub issue page in new tab
+    const issueUrl = `https://github.com/${CONFIG.REPO_OWNER}/${CONFIG.REPO_NAME}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=${labels.join(',')}`;
+    window.open(issueUrl, '_blank');
+    return { fallback: true };
+  }
+
+  const res = await fetch(`${GITHUB_API}/issues`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github+json'
+    },
+    body: JSON.stringify({ title, body, labels })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(`GitHub API error: ${err.message || res.status}`);
+  }
+
+  return res.json();
+}
 
 // Fetch all proposals from the GitHub repo
 export async function listProposals() {
@@ -28,7 +57,6 @@ export async function listProposals() {
       })
     );
 
-    // Sort: active first, then by creation date desc
     proposals.sort((a, b) => {
       if (a.status === 'active' && b.status !== 'active') return -1;
       if (a.status !== 'active' && b.status === 'active') return 1;
@@ -87,16 +115,18 @@ export async function tallyVotes(votes) {
   const detailed = await Promise.all(
     votes.map(async (v) => {
       const currentTDH = await getTDH(v.voter);
-      return { ...v, currentTDH };
+      // Use allocated TDH if available, capped by current TDH
+      const effectiveTDH = v.allocatedTDH ? Math.min(v.allocatedTDH, currentTDH) : currentTDH;
+      return { ...v, currentTDH, effectiveTDH };
     })
   );
 
   for (const v of detailed) {
     if (v.vote === 'yes') {
-      yesTDH += v.currentTDH;
+      yesTDH += v.effectiveTDH;
       yesCount++;
     } else {
-      noTDH += v.currentTDH;
+      noTDH += v.effectiveTDH;
       noCount++;
     }
   }
@@ -110,7 +140,7 @@ export async function tallyVotes(votes) {
   };
 }
 
-// Create a new proposal (submits via GitHub Issue)
+// Create a new proposal (via GitHub API, stays on-site)
 export async function createProposal(action, waveId, reason) {
   const address = getAddress();
   if (!address) throw new Error('Wallet not connected');
@@ -147,18 +177,16 @@ export async function createProposal(action, waveId, reason) {
     signature
   };
 
-  // Submit as GitHub Issue
-  // The user will be redirected to create the issue
+  // Submit via GitHub API
   const title = `[PROPOSAL] ${action} wave: ${wave.name}`;
   const body = '```json\n' + JSON.stringify(proposal, null, 2) + '\n```';
-  const issueUrl = `https://github.com/${CONFIG.REPO_OWNER}/${CONFIG.REPO_NAME}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=proposal`;
 
-  window.open(issueUrl, '_blank');
+  const result = await createGitHubIssue(title, body, ['proposal']);
 
   // Invalidate cache
   proposalsCache = null;
 
-  return proposal;
+  return { proposal, issue: result };
 }
 
 // Check if current user has voted on a proposal
@@ -175,4 +203,10 @@ export async function hasVoted(proposalId) {
   } catch {
     return false;
   }
+}
+
+// Invalidate cache (call after actions)
+export function invalidateCache() {
+  proposalsCache = null;
+  proposalsCacheTs = 0;
 }
