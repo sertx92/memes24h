@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6529 Fetch Test</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 800px;
+    height: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    transition: background-color 1s ease, color 1s ease;
+    background: #111;
+    color: #fff;
+  }
+  .clock {
+    font-size: 120px;
+    font-weight: bold;
+    letter-spacing: 8px;
+  }
+  .seconds {
+    font-size: 40px;
+    opacity: 0.5;
+    margin-top: 8px;
+  }
+  .message {
+    font-size: 24px;
+    margin-top: 40px;
+    letter-spacing: 4px;
+    text-align: center;
+    padding: 0 40px;
+  }
+  .status {
+    position: absolute;
+    bottom: 30px;
+    font-size: 12px;
+    opacity: 0.4;
+    text-align: center;
+    line-height: 1.8;
+  }
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .dot.ok { background: #00ff88; }
+  .dot.fail { background: #ff4444; }
+</style>
+</head>
+<body>
+  <div class="clock" id="clock">--:--</div>
+  <div class="seconds" id="seconds">:--</div>
+  <div class="message" id="message">Loading...</div>
+  <div class="status" id="status"></div>
+
+  <script>
+    // === CONFIG ===
+    // Sostituisci con l'URL del tuo JSON hostato (GitHub Gist raw, server, etc.)
+    const DATA_URL = 'https://gist.githubusercontent.com/sertx92/1b84f8b762cd2f6640ed7086cc9b7c69/raw/test-data.json';
+    const FETCH_INTERVAL = 5 * 60 * 1000; // 5 minuti
+
+    // Colori che ciclano ogni 5 minuti (fallback locale)
+    const COLOR_CYCLES = [
+      { bg: '#1a0a2e', text: '#00ff88' },
+      { bg: '#0a1a2e', text: '#ffaa00' },
+      { bg: '#2e0a1a', text: '#00ddff' },
+      { bg: '#0a2e1a', text: '#ff66aa' },
+      { bg: '#1a1a0a', text: '#aa88ff' },
+      { bg: '#0a0a2e', text: '#ffff44' },
+    ];
+
+    let fetchCount = 0;
+    let lastFetchOk = false;
+
+    // Orologio - aggiorna ogni secondo
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${h}:${m}`;
+      document.getElementById('seconds').textContent = `:${s}`;
+
+      // Cambia colore ogni 5 minuti basato sul minuto corrente
+      const cycleIndex = Math.floor(now.getMinutes() / 5) % COLOR_CYCLES.length;
+      const colors = COLOR_CYCLES[cycleIndex];
+      document.body.style.backgroundColor = colors.bg;
+      document.body.style.color = colors.text;
+    }
+
+    // Fetch dati esterni
+    async function fetchData() {
+      fetchCount++;
+      const statusEl = document.getElementById('status');
+      const msgEl = document.getElementById('message');
+
+      try {
+        const response = await fetch(DATA_URL + '?t=' + Date.now());
+        const data = await response.json();
+        lastFetchOk = true;
+
+        // Applica dati dal server
+        if (data.message) {
+          msgEl.textContent = data.message;
+        }
+        if (data.background) {
+          document.body.style.backgroundColor = data.background;
+        }
+        if (data.textColor) {
+          document.body.style.color = data.textColor;
+        }
+
+        statusEl.textContent = '';
+
+      } catch (err) {
+        lastFetchOk = false;
+        msgEl.textContent = 'FETCH FALLITO - USANDO FALLBACK LOCALE';
+        statusEl.textContent = '';
+      }
+    }
+
+    // Init
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    fetchData();
+    setInterval(fetchData, FETCH_INTERVAL);
+  </script>
+</body>
+</html>

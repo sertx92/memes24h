@@ -1,0 +1,28 @@
+name: Tally Proposals
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  tally:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run tally
+        run: node .github/scripts/tally.js
+
+      - name: Commit changes
+        run: |
+          git config user.name "MEMES24H Bot"
+          git config user.email "bot@memes24h.xyz"
+          git add data/
+          git diff --staged --quiet || git commit -m "Tally: update proposal statuses and config"
+          git push || echo "Nothing to push"

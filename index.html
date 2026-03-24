@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEMES 24H</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    font-family: 'Roboto', sans-serif;
+    background: #0a0a1a;
+    position: relative;
+  }
+
+  /* === BACKGROUND === */
+  .bg-studio {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 40%, #1a0a2e 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 30%, #0d1b3e 0%, transparent 50%),
+      linear-gradient(135deg, #0c0c24 0%, #1a0a2e 30%, #0d1b3e 60%, #0c0c24 100%);
+    z-index: 0;
+  }
+
+  .bg-studio::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* === TOP BAR === */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #cc0000, #ff1a1a, #cc0000);
+    z-index: 20;
+  }
+
+  /* === LOGO === */
+  .logo-area {
+    position: absolute;
+    top: 14px; left: 20px;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-badge {
+    background: linear-gradient(135deg, #cc0000, #990000);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    padding: 4px 14px;
+    letter-spacing: 3px;
+    border-radius: 3px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    box-shadow: 0 2px 8px rgba(204,0,0,0.4);
+  }
+
+  .logo-sub {
+    color: rgba(255,255,255,0.6);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  /* === LIVE === */
+  .live-badge {
+    position: absolute;
+    top: 14px; right: 20px;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .live-dot {
+    width: 10px; height: 10px;
+    background: #ff0000;
+    border-radius: 50%;
+    animation: livePulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(255,0,0,0.6);
+  }
+
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .live-text {
+    color: #ff3333;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 3px;
+  }
+
+  .live-time {
+    color: rgba(255,255,255,0.5);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-left: 6px;
+  }
+
+  /* === PRESENTER === */
+  .presenter-container {
+    position: absolute;
+    bottom: 70px; left: 0;
+    width: 420px; height: 520px;
+    z-index: 10;
+    overflow: hidden;
+  }
+
+  .presenter-container img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .presenter-container::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(10,10,26,0.8));
+  }
+
+  /* === STORY LABEL === */
+  .story-label {
+    position: absolute;
+    left: 0; bottom: 130px;
+    z-index: 14;
+  }
+
+  .story-label-tag {
+    background: linear-gradient(90deg, #003399, #0055cc);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    display: inline-block;
+  }
+
+  /* === NEWS SCREEN === */
+  .news-screen {
+    position: absolute;
+    top: 50px; right: 30px;
+    width: 680px; height: 480px;
+    background: rgba(10, 12, 30, 0.85);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    z-index: 12;
+    overflow: hidden;
+    box-shadow:
+      0 0 40px rgba(0,100,255,0.08),
+      inset 0 0 60px rgba(0,0,0,0.3);
+  }
+
+  /* Screen header */
+  .screen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, rgba(204,0,0,0.9), rgba(150,0,0,0.7));
+    border-bottom: 2px solid rgba(255,50,50,0.3);
+  }
+
+  .screen-title {
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .screen-counter {
+    color: rgba(255,255,255,0.7);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .screen-date {
+    color: rgba(255,255,255,0.7);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  /* === ANIMATED NEWS CARDS === */
+  .news-stage {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 42px);
+  }
+
+  .news-card {
+    position: absolute;
+    inset: 0;
+    padding: 18px 22px 14px;
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+  }
+
+  .news-card.active {
+    opacity: 1;
+    pointer-events: auto;
+    animation: cardIn 0.7s ease-out forwards;
+  }
+
+  .news-card.exit {
+    animation: cardOut 0.5s ease-in forwards;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes cardOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-15px); }
+  }
+
+  /* Category bar */
+  .card-cat-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .card-cat {
+    background: linear-gradient(135deg, #cc0000, #990000);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 2px;
+  }
+
+  .card-cat-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(204,0,0,0.3), transparent);
+  }
+
+  /* Headline */
+  .card-headline {
+    color: #ffffff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    opacity: 0;
+  }
+
+  .news-card.active .card-headline {
+    animation: textIn 0.5s 0.2s ease-out forwards;
+  }
+
+  @keyframes textIn {
+    from { opacity: 0; transform: translateX(-15px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Divider */
+  .card-divider {
+    width: 0;
+    height: 2px;
+    background: #cc0000;
+    margin-bottom: 14px;
+  }
+
+  .news-card.active .card-divider {
+    animation: divGrow 0.4s 0.35s ease-out forwards;
+  }
+
+  @keyframes divGrow {
+    to { width: 60px; }
+  }
+
+  /* Summary */
+  .card-summary {
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    line-height: 1.55;
+    opacity: 0;
+  }
+
+  .news-card.active .card-summary {
+    animation: textIn 0.5s 0.45s ease-out forwards;
+  }
+
+  /* Data boxes */
+  .card-data {
+    display: flex;
+    gap: 0;
+    margin-top: auto;
+    padding-top: 14px;
+    opacity: 0;
+  }
+
+  .news-card.active .card-data {
+    animation: textIn 0.5s 0.55s ease-out forwards;
+  }
+
+  .data-box {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 10px 14px;
+    text-align: center;
+  }
+
+  .data-box:first-child { border-radius: 4px 0 0 4px; }
+  .data-box:last-child { border-radius: 0 4px 4px 0; }
+
+  .data-label {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .data-value {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .data-sub {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 10px;
+    color: rgba(255,255,255,0.25);
+    margin-top: 2px;
+  }
+
+  /* Source */
+  .card-source {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    opacity: 0;
+  }
+
+  .news-card.active .card-source {
+    animation: textIn 0.4s 0.6s ease-out forwards;
+  }
+
+  .source-dot {
+    width: 6px; height: 6px;
+    background: #cc0000;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(204,0,0,0.4);
+  }
+
+  .source-text {
+    color: rgba(255,255,255,0.25);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .source-link {
+    color: rgba(100,150,255,0.5);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-decoration: none;
+    margin-left: 8px;
+    transition: color 0.2s;
+  }
+
+  .source-link:hover {
+    color: rgba(100,180,255,0.9);
+    text-decoration: underline;
+  }
+
+  /* Progress bar inside screen */
+  .screen-progress {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.05);
+    z-index: 5;
+  }
+
+  .screen-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #cc0000, #ff3333);
+    width: 0%;
+  }
+
+  /* === HEADLINE BAR === */
+  .headline-bar {
+    position: absolute;
+    bottom: 70px; left: 0; right: 0;
+    height: 52px;
+    z-index: 15;
+    display: flex;
+  }
+
+  .headline-label {
+    background: linear-gradient(180deg, #cc0000, #990000);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 3px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    flex-shrink: 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .headline-content {
+    flex: 1;
+    background: linear-gradient(180deg, #1a1a3a, #0d0d2a);
+    border-top: 2px solid rgba(204,0,0,0.5);
+    border-bottom: 2px solid rgba(204,0,0,0.3);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    overflow: hidden;
+  }
+
+  .headline-text {
+    color: #ffffff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+  }
+
+  /* === TICKER === */
+  .ticker-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 70px;
+    z-index: 15;
+    display: flex;
+    background: linear-gradient(180deg, #0a0a20, #05051a);
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .ticker-label {
+    background: linear-gradient(135deg, #cc0000, #aa0000);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .ticker-label::after {
+    content: '';
+    position: absolute;
+    right: -12px; top: 0; bottom: 0;
+    width: 12px;
+    background: linear-gradient(90deg, rgba(170,0,0,0.5), transparent);
+  }
+
+  .ticker-track {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-content {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: tickerScroll 40s linear infinite;
+  }
+
+  @keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 30px;
+    flex-shrink: 0;
+  }
+
+  .ticker-item-label {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+  }
+
+  .ticker-item-value {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .ticker-separator {
+    color: rgba(255,255,255,0.15);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* === DECORATIVE === */
+  .corner-accent {
+    position: absolute;
+    width: 60px; height: 60px;
+    z-index: 5;
+  }
+  .corner-accent.top-left { top: 10px; left: 10px; border-top: 2px solid rgba(204,0,0,0.3); border-left: 2px solid rgba(204,0,0,0.3); }
+  .corner-accent.top-right { top: 10px; right: 10px; border-top: 2px solid rgba(204,0,0,0.3); border-right: 2px solid rgba(204,0,0,0.3); }
+
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+    );
+  }
+
+  .gov-btn {
+    position: absolute;
+    top: 14px;
+    right: 160px;
+    z-index: 16;
+    background: rgba(204,0,0,0.2);
+    border: 1px solid rgba(204,0,0,0.4);
+    color: rgba(255,255,255,0.6);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .gov-btn:hover {
+    background: rgba(204,0,0,0.4);
+    color: #fff;
+  }
+
+  /* === NAV ARROWS === */
+  .nav-arrows {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    z-index: 6;
+    display: flex;
+    gap: 4px;
+  }
+
+  .nav-btn {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-family: 'Roboto Condensed', sans-serif;
+  }
+
+  .nav-btn:hover {
+    background: rgba(204,0,0,0.4);
+    border-color: rgba(204,0,0,0.6);
+    color: #fff;
+  }
+
+  /* === CARD WITH IMAGE LAYOUT === */
+  .card-body {
+    display: flex;
+    gap: 18px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .card-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .card-preview {
+    flex-shrink: 0;
+    width: 180px;
+    height: 220px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.3);
+    opacity: 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    position: relative;
+  }
+
+  .news-card.active .card-preview {
+    animation: previewIn 0.6s 0.4s ease-out forwards;
+  }
+
+  @keyframes previewIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .card-preview img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+
+  .card-preview-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 16px 8px 6px;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-studio"></div>
+  <div class="scanlines"></div>
+  <div class="top-bar"></div>
+  <div class="corner-accent top-left"></div>
+  <div class="corner-accent top-right"></div>
+
+  <!-- Logo -->
+  <div class="logo-area">
+    <div class="logo-badge">MEMES 24H</div>
+    <div class="logo-sub">The Memes Network</div>
+  </div>
+
+  <!-- Governance button -->
+  <a href="governance/" target="_blank" class="gov-btn" title="Vote on news sources">GOV</a>
+
+  <!-- Live -->
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    <span class="live-text">LIVE</span>
+    <span class="live-time" id="liveTime"></span>
+  </div>
+
+  <!-- Presenter -->
+  <div class="presenter-container">
+    <img src="presenter.webp" alt="Presenter">
+  </div>
+
+  <!-- Story label -->
+  <div class="story-label">
+    <div class="story-label-tag" id="storyLabel">Today's Top Stories</div>
+  </div>
+
+  <!-- News Screen with Animated Slideshow -->
+  <div class="news-screen">
+    <div class="screen-header">
+      <span class="screen-title">News of the Day</span>
+      <span class="screen-counter" id="screenCounter">01 / 05</span>
+      <span class="screen-date" id="screenDate"></span>
+    </div>
+    <div class="news-stage" id="newsStage">
+      <!-- Cards injected by JS -->
+    </div>
+    <div class="nav-arrows">
+      <div class="nav-btn" id="navPrev">&#9664;</div>
+      <div class="nav-btn" id="navNext">&#9654;</div>
+    </div>
+    <div class="screen-progress">
+      <div class="screen-progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Headline bar -->
+  <div class="headline-bar">
+    <div class="headline-label">NEWS</div>
+    <div class="headline-content">
+      <div class="headline-text" id="headlineText"></div>
+    </div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker-bar">
+    <div class="ticker-label">LIVE</div>
+    <div class="ticker-track">
+      <div class="ticker-content" id="tickerContent">
+        <span class="ticker-item"><span class="ticker-item-label">Loading live data...</span></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === NEWS DATA ===
+    const NEWS = [
+      {
+        category: 'MARKET',
+        headline: '"Molly Wop" Sells for 0.069 ETH — 15 Sales Today',
+        summary: 'Daily volume hits 1.21 ETH across 15 trades. Notable sales include "Open Roads, Open Metaverse" at 0.08 ETH and a double sale of "no, really this is going to be our year" at 0.18-0.19 ETH.',
+        source: 'OpenSea',
+        link: 'https://opensea.io/collection/thememes6529',
+        image: null,
+        dataBoxes: [
+          { label: 'Floor', value: '0.0139', sub: 'ETH' },
+          { label: '24h Vol', value: '1.21', sub: 'ETH' },
+          { label: '7d Vol', value: '10.64', sub: 'ETH' },
+          { label: 'Sales', value: '15', sub: 'Today' }
+        ]
+      },
+      {
+        category: 'MAIN STAGE',
+        headline: 'QuantumSpirit Submits "Cerebrum" — Glitch Art Enters The Vote',
+        summary: 'A signature glitch aesthetic exploring digital distortion and memory. Created with Midjourney AI and Photoshop, inspired by flowers at night reimagined through layered distortions.',
+        source: 'The Memes Main Stage',
+        link: 'https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077?drop=642e968d-a16a-4815-89e6-ab460fbdcc05',
+        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_98fae5a8-cdd6-4e70-8bf7-d34acbc20caf/7098c351-16b4-4829-aca9-baa6dd957a36.gif', label: 'Cerebrum — QuantumSpirit' },
+        dataBoxes: null
+      },
+      {
+        category: 'MAIN STAGE',
+        headline: 'blake69 Submits "Unverified Identity" to Main Stage',
+        summary: 'A new entry in the ongoing vote for The Memes. The community continues to grow with fresh artistic perspectives joining the decentralized curation process.',
+        source: 'The Memes Main Stage',
+        link: 'https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077?drop=e70ee4e9-f9be-4b72-ae1b-9163589ba6ee',
+        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_e04c764b-3eb4-11ef-9d82-029a0e4b6159/31115919-6b77-40bc-9ac5-410074bc0dd4.png', label: 'Unverified Identity — blake69' },
+        dataBoxes: null
+      },
+      {
+        category: 'MAIN STAGE',
+        headline: 'Top Race: david Leads with 65.2M TDH — RegularDad Has Most Voters',
+        summary: '#1 "An Intro to 6529" by david holds at 65.2M TDH (52 voters). #6 "Karen\'s Lousy T-shirt" by RegularDad at 10.3M TDH but leads in voter count with 63! #10 "Enchanted Objects" by maybe at 6.4M TDH.',
+        source: 'The Memes Main Stage',
+        link: 'https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077',
+        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_0f8321c5-87b4-11ee-9d82-029a0e4b6159/0dd319ca-3ab0-4857-8dbf-aa0bdc2da01f.jpeg', label: "#6 Karen's T-shirt — RegularDad" },
+        dataBoxes: [
+          { label: '#1 david', value: '65.2M', sub: 'TDH (52 votes)' },
+          { label: '#6 RegularDad', value: '10.3M', sub: 'TDH (63 votes)' },
+          { label: '#10 maybe', value: '6.4M', sub: 'TDH (40 votes)' },
+          { label: '#14 fercaggiano', value: '3.9M', sub: 'TDH (23 votes)' }
+        ]
+      },
+      {
+        category: 'WHALE ALERT',
+        headline: 'Mystery Whale 0x7d88 Accumulates 15 Memes + 4 Pebbles',
+        summary: 'An unidentified wallet (0x7d88f2...e0b6) has been aggressively buying: 15 Memes purchases totaling 0.877 ETH and 4 Pebbles including a 1.4 ETH and 2.2 ETH buy. No 6529 profile — a new collector entering the ecosystem.',
+        source: 'OpenSea + 6529 API',
+        link: 'https://opensea.io/0x7d88f2e2e68e09e7b7aa35c9b2ece3e0e898e0b6',
+        image: null,
+        dataBoxes: [
+          { label: 'Memes Buys', value: '15', sub: '0.877 ETH' },
+          { label: 'Pebbles Buys', value: '4', sub: '5.5 ETH' },
+          { label: '6529 Profile', value: 'None', sub: 'Unknown' },
+          { label: 'TDH', value: '0', sub: 'New Collector' }
+        ]
+      },
+      {
+        category: 'COMMUNITY',
+        headline: 'AEZY: "6529 Isn\'t Social Media — It\'s a Network"',
+        summary: '"Found a lot of energy and inspiration recently by avoiding most of Twitter timeline. 6529 isn\'t social media to me, it\'s a network where we network." — The art lives in the details.',
+        source: "maybe's dive bar",
+        link: 'https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e?drop=fb330615-b2c5-4e92-926e-60f572c4d010',
+        image: null,
+        dataBoxes: null
+      },
+      {
+        category: 'CULTURE',
+        headline: '"Larpmaxxing" — DeltaSauce Coins New Web3 Term',
+        summary: 'Sunday buzz in the dive bar: new auctions launched by RonnyGuy, blake69 working on new submissions, and the community debates the loss of nuance in crypto culture.',
+        source: "maybe's dive bar",
+        link: 'https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e?drop=8dc8abf8-9039-421d-81fb-8e74e7d573d5',
+        image: null,
+        dataBoxes: null
+      },
+      {
+        category: 'MARKET',
+        headline: 'Pebbles by Zeblocks Hold Strong at 0.595 ETH Floor',
+        summary: '445 holders maintain positions with 1.4 ETH weekly volume. Total Memes lifetime volume: 26,787 ETH across 94,428 trades and 10,518 unique holders.',
+        source: 'OpenSea',
+        link: 'https://opensea.io/collection/pebbles-by-zeblocks',
+        image: null,
+        dataBoxes: [
+          { label: 'Pebbles Floor', value: '0.595', sub: 'ETH' },
+          { label: 'Pebbles Holders', value: '445', sub: '' },
+          { label: 'Memes Lifetime', value: '26,787', sub: 'ETH Volume' },
+          { label: 'Total Sales', value: '94,428', sub: 'All Time' }
+        ]
+      },
+      {
+        category: 'SUPERRARE x 6529',
+        headline: 'JasonOPhoto Leads SuperRare Boost with 2.07M TDH',
+        summary: 'The SuperRare x 6529 application wave heats up. JasonOPhoto\'s "The Wanderer" leads with 2.07M TDH (11 voters), followed by Articulate at 1.4M TDH and Zigmarillion\'s "Two sides to the same story" at 1.18M TDH.',
+        source: 'SuperRare Chat & Application Boost',
+        link: 'https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd',
+        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_746dccd5-fdc4-4243-a54d-c981ff5ba461/31b825aa-23bc-47f0-ab89-cd850a4d94d8.jpg', label: '#5 The Wanderer — JasonOPhoto' },
+        dataBoxes: [
+          { label: '#5 JasonOPhoto', value: '2.07M', sub: 'TDH (11 votes)' },
+          { label: '#6 Articulate', value: '1.4M', sub: 'TDH (11 votes)' },
+          { label: '#7 Zigmarillion', value: '1.18M', sub: 'TDH (12 votes)' },
+          { label: '#2 Kostas_Photo', value: '685K', sub: 'TDH (6 votes)' }
+        ]
+      },
+      {
+        category: 'SUPERRARE x 6529',
+        headline: 'blake69 Submits "The Unstable Wave" — Leads SR Rankings',
+        summary: '"The wave no longer exists as a fixed image, but as a condition, something perpetually shifting." blake69 also submitted "WAGMI" (#4, 301K TDH). Active community with GM culture thriving.',
+        source: 'SuperRare Chat & Application Boost',
+        link: 'https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd?drop=2d6beb86-7bff-4478-9d11-0c2a0bb1e55e',
+        image: { url: 'https://d3lqz0a4bldqgf.cloudfront.net/drops/author_e04c764b-3eb4-11ef-9d82-029a0e4b6159/e9fba321-c205-4ca5-83fa-8d7eadd56b96.png', label: 'The Unstable Wave — blake69' },
+        dataBoxes: null
+      }
+    ];
+
+    const CARD_DURATION = 8000;
+    let currentIndex = -1;
+
+    // === CLOCK ===
+    function updateTime() {
+      const now = new Date();
+      const h = String(now.getUTCHours()).padStart(2, '0');
+      const m = String(now.getUTCMinutes()).padStart(2, '0');
+      const s = String(now.getUTCSeconds()).padStart(2, '0');
+      document.getElementById('liveTime').textContent = `${h}:${m}:${s} GMT`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Date
+    const now = new Date();
+    document.getElementById('screenDate').textContent =
+      now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+
+    // === BUILD CARDS ===
+    const stage = document.getElementById('newsStage');
+    NEWS.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'news-card';
+      card.id = `card-${i}`;
+
+      let dataHTML = '';
+      if (item.dataBoxes) {
+        dataHTML = '<div class="card-data">' +
+          item.dataBoxes.map(d =>
+            `<div class="data-box">
+              <div class="data-label">${d.label}</div>
+              <div class="data-value">${d.value}</div>
+              <div class="data-sub">${d.sub}</div>
+            </div>`
+          ).join('') +
+          '</div>';
+      }
+
+      let imageHTML = '';
+      if (item.image) {
+        imageHTML = `
+          <div class="card-preview">
+            <img src="${item.image.url}" alt="${item.image.label}">
+            <div class="card-preview-label">${item.image.label}</div>
+          </div>`;
+      }
+
+      const hasImage = item.image ? true : false;
+
+      const linkHTML = item.link
+        ? `<a href="${item.link}" target="_blank" class="source-link">View &rarr;</a>`
+        : '';
+
+      card.innerHTML = `
+        <div class="card-cat-bar">
+          <div class="card-cat">${item.category}</div>
+          <div class="card-cat-line"></div>
+        </div>
+        <div class="card-body">
+          <div class="card-text">
+            <div class="card-headline">${item.headline}</div>
+            <div class="card-divider"></div>
+            <div class="card-summary">${item.summary}</div>
+            ${dataHTML}
+            <div class="card-source">
+              <div class="source-dot"></div>
+              <div class="source-text">${item.source}</div>
+              ${linkHTML}
+            </div>
+          </div>
+          ${imageHTML}
+        </div>
+      `;
+      stage.appendChild(card);
+    });
+
+    // === SLIDESHOW ===
+    let autoTimer = null;
+
+    function showCard(index) {
+      if (currentIndex >= 0) {
+        const prev = document.getElementById(`card-${currentIndex}`);
+        prev.classList.remove('active');
+        prev.classList.add('exit');
+      }
+
+      currentIndex = ((index % NEWS.length) + NEWS.length) % NEWS.length;
+      const card = document.getElementById(`card-${currentIndex}`);
+
+      setTimeout(() => {
+        document.querySelectorAll('.news-card.exit').forEach(c => c.classList.remove('exit'));
+        card.classList.add('active');
+
+        document.getElementById('headlineText').textContent = NEWS[currentIndex].headline.toUpperCase();
+        document.getElementById('screenCounter').textContent =
+          `${String(currentIndex + 1).padStart(2, '0')} / ${String(NEWS.length).padStart(2, '0')}`;
+        document.getElementById('storyLabel').textContent = NEWS[currentIndex].category;
+
+        // Progress bar
+        const fill = document.getElementById('progressFill');
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            fill.style.transition = `width ${CARD_DURATION}ms linear`;
+            fill.style.width = '100%';
+          });
+        });
+      }, 150);
+    }
+
+    function resetAutoplay() {
+      clearInterval(autoTimer);
+      autoTimer = setInterval(() => showCard(currentIndex + 1), CARD_DURATION);
+    }
+
+    // Nav arrows
+    document.getElementById('navPrev').addEventListener('click', () => {
+      showCard(currentIndex - 1);
+      resetAutoplay();
+    });
+    document.getElementById('navNext').addEventListener('click', () => {
+      showCard(currentIndex + 1);
+      resetAutoplay();
+    });
+
+    // Start slideshow
+    showCard(0);
+    autoTimer = setInterval(() => showCard(currentIndex + 1), CARD_DURATION);
+
+    // ===================================================
+    // LIVE TICKER ENGINE - Fetches real-time data
+    // ===================================================
+
+    const OPENSEA_KEY = '0763c7f2c4104d288f734c0f91602913';
+    const WAVES_TO_MONITOR = [
+      { id: 'b38288e6-ca9d-45ce-8323-3dc5e094f04e', name: "maybe's dive bar" },
+      { id: '9cc8118b-0ae0-4b22-8d15-3b8ed6604bac', name: 'Lair of the Minotaur' },
+      { id: 'b6128077-ea78-4dd9-b381-52c4eadb2077', name: 'Main Stage' },
+      { id: 'd22e3046-a00e-48b9-b245-a339a44c37cd', name: 'SuperRare x 6529' }
+    ];
+    const COLLECTIONS = ['thememes6529', 'pebbles-by-zeblocks'];
+    const TICKER_REFRESH = 3 * 60 * 1000; // 3 minutes
+
+    let tickerItems = [];
+
+    function makeTickerHTML(items) {
+      const html = items.map(t => {
+        let cls = '';
+        if (t.type === 'hot') cls = ' style="color:#ff4444"';
+        if (t.type === 'whale') cls = ' style="color:#ffaa00"';
+        if (t.type === 'chat') cls = ' style="color:#00ddff"';
+        return `<div class="ticker-item"><span class="ticker-item-label"${cls}>${t.label}</span><span class="ticker-item-value">${t.value}</span></div><div class="ticker-separator">|</div>`;
+      }).join('');
+      return html + html; // duplicate for seamless loop
+    }
+
+    // --- Fetch wave activity ---
+    async function fetchWaveActivity() {
+      const results = [];
+      for (const wave of WAVES_TO_MONITOR) {
+        try {
+          const res = await fetch(`https://api.6529.io/api/drops?wave_id=${wave.id}&limit=20`);
+          const data = await res.json();
+          if (!data.length) continue;
+
+          const now = Date.now();
+          const fiveMinAgo = now - 5 * 60 * 1000;
+          const thirtyMinAgo = now - 30 * 60 * 1000;
+
+          // Messages in last 5 min and 30 min
+          const recent5 = data.filter(d => d.created_at > fiveMinAgo);
+          const recent30 = data.filter(d => d.created_at > thirtyMinAgo);
+
+          // Calculate msg/hour rate
+          const times = data.map(d => d.created_at);
+          const spanMs = times[0] - times[times.length - 1];
+          const msgsPerHour = spanMs > 0 ? (data.length / (spanMs / 3600000)).toFixed(0) : 0;
+
+          // Active participants
+          const authors = [...new Set(data.map(d => d.author.handle))];
+
+          if (recent5.length >= 3) {
+            results.push({
+              label: '🔴 HOT NOW',
+              value: `${wave.name}: ${recent5.length} msgs in 5 min`,
+              type: 'hot'
+            });
+          } else if (recent30.length >= 5) {
+            results.push({
+              label: '💬 Active',
+              value: `${wave.name}: ${msgsPerHour} msg/h (${authors.slice(0, 3).join(', ')})`,
+              type: 'chat'
+            });
+          }
+
+          // Latest message preview
+          if (data[0]) {
+            const latest = data[0];
+            const content = latest.parts[0].content;
+            const short = content.length > 50 ? content.substring(0, 50) + '...' : content;
+            results.push({
+              label: wave.name,
+              value: `${latest.author.handle}: "${short}"`,
+              type: 'chat'
+            });
+          }
+        } catch (e) { /* skip on error */ }
+      }
+      return results;
+    }
+
+    // --- Fetch OpenSea market data ---
+    async function fetchMarketData() {
+      const results = [];
+      const slugNames = { 'thememes6529': 'Memes', 'pebbles-by-zeblocks': 'Pebbles', '6529-gradient': 'Gradient' };
+
+      for (const slug of COLLECTIONS) {
+        try {
+          const res = await fetch(`https://api.opensea.io/api/v2/collections/${slug}/stats`, {
+            headers: { 'X-API-KEY': OPENSEA_KEY }
+          });
+          const data = await res.json();
+          const name = slugNames[slug];
+
+          results.push({
+            label: `${name} Floor`,
+            value: `${data.total.floor_price} ${data.total.floor_price_symbol}`,
+            type: 'market'
+          });
+
+          if (data.intervals[0] && data.intervals[0].sales > 0) {
+            results.push({
+              label: `${name} 24h`,
+              value: `${data.intervals[0].volume.toFixed(2)} ETH (${data.intervals[0].sales} sales)`,
+              type: 'market'
+            });
+          }
+        } catch (e) { /* skip */ }
+      }
+      return results;
+    }
+
+    // --- Fetch whale buyers ---
+    async function fetchWhaleActivity() {
+      const results = [];
+      try {
+        const res = await fetch('https://api.opensea.io/api/v2/events/collection/thememes6529?event_type=sale&limit=50', {
+          headers: { 'X-API-KEY': OPENSEA_KEY }
+        });
+        const data = await res.json();
+        const buyers = {};
+        for (const e of data.asset_events) {
+          const addr = e.buyer;
+          const price = parseInt(e.payment.quantity) / 1e18;
+          if (!buyers[addr]) buyers[addr] = { count: 0, spent: 0, last: '' };
+          buyers[addr].count++;
+          buyers[addr].spent += price;
+          if (!buyers[addr].last) buyers[addr].last = e.nft.name;
+        }
+
+        // Find whales (3+ buys)
+        const whales = Object.entries(buyers)
+          .filter(([_, v]) => v.count >= 3)
+          .sort((a, b) => b[1].count - a[1].count);
+
+        for (const [addr, info] of whales.slice(0, 2)) {
+          const short = addr.substring(0, 6) + '...' + addr.substring(addr.length - 4);
+          results.push({
+            label: '🐋 Whale',
+            value: `${short}: ${info.count} buys, ${info.spent.toFixed(3)} ETH (last: ${info.last})`,
+            type: 'whale'
+          });
+        }
+
+        // Also add Pebbles whale check
+        const res2 = await fetch('https://api.opensea.io/api/v2/events/collection/pebbles-by-zeblocks?event_type=sale&limit=20', {
+          headers: { 'X-API-KEY': OPENSEA_KEY }
+        });
+        const data2 = await res2.json();
+        const pBuyers = {};
+        for (const e of data2.asset_events) {
+          const addr = e.buyer;
+          if (!pBuyers[addr]) pBuyers[addr] = 0;
+          pBuyers[addr]++;
+        }
+        const pWhales = Object.entries(pBuyers).filter(([_, c]) => c >= 2);
+        for (const [addr, count] of pWhales.slice(0, 1)) {
+          const short = addr.substring(0, 6) + '...' + addr.substring(addr.length - 4);
+          results.push({
+            label: '🐋 Pebbles Whale',
+            value: `${short}: ${count} buys recently`,
+            type: 'whale'
+          });
+        }
+      } catch (e) { /* skip */ }
+      return results;
+    }
+
+    // --- Fetch top submissions TDH ---
+    async function fetchTopSubmissions() {
+      const results = [];
+      try {
+        let sn = 999999;
+        const allRanked = [];
+        for (let page = 0; page < 50; page++) {
+          const res = await fetch(`https://api.6529.io/api/drops?wave_id=b6128077-ea78-4dd9-b381-52c4eadb2077&drop_type=PARTICIPATION&limit=20&serial_no_less_than=${sn}`);
+          const data = await res.json();
+          if (!data.length) break;
+          for (const d of data) {
+            if (d.rank !== null && d.rank <= 10) {
+              allRanked.push({ rank: d.rank, title: d.title, author: d.author.handle, tdh: d.realtime_rating });
+            }
+          }
+          sn = data[data.length - 1].serial_no;
+          if (allRanked.length >= 5) break;
+        }
+        allRanked.sort((a, b) => a.rank - b.rank);
+        const seen = new Set();
+        for (const d of allRanked.slice(0, 5)) {
+          if (seen.has(d.title)) continue;
+          seen.add(d.title);
+          const tdhStr = d.tdh >= 1000000 ? (d.tdh / 1000000).toFixed(1) + 'M' : (d.tdh / 1000).toFixed(0) + 'K';
+          results.push({
+            label: `#${d.rank} ${d.author}`,
+            value: `${tdhStr} TDH`,
+            type: 'hot'
+          });
+        }
+      } catch (e) { /* skip */ }
+      return results;
+    }
+
+    // --- Master ticker update ---
+    async function updateTicker() {
+      try {
+        const [waves, market, whales, tops] = await Promise.all([
+          fetchWaveActivity(),
+          fetchMarketData(),
+          fetchWhaleActivity(),
+          fetchTopSubmissions()
+        ]);
+
+        tickerItems = [...tops, ...market, ...whales, ...waves];
+
+        if (tickerItems.length > 0) {
+          const el = document.getElementById('tickerContent');
+          el.innerHTML = makeTickerHTML(tickerItems);
+          // Restart animation
+          el.style.animation = 'none';
+          el.offsetHeight; // trigger reflow
+          const duration = Math.max(40, tickerItems.length * 5);
+          el.style.animation = `tickerScroll ${duration}s linear infinite`;
+        }
+      } catch (e) {
+        console.error('Ticker update failed:', e);
+      }
+    }
+
+    // Initial fetch + refresh every 3 minutes
+    updateTicker();
+    setInterval(updateTicker, TICKER_REFRESH);
+  </script>
+
+</body>
+</html>

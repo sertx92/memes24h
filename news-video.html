@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEMES 24H - News Broadcast</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    font-family: 'Roboto', sans-serif;
+    background: #06061a;
+    position: relative;
+  }
+
+  /* === BACKGROUND === */
+  .bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(204,0,0,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(0,50,150,0.06) 0%, transparent 50%),
+      linear-gradient(180deg, #08081e 0%, #0a0a24 50%, #06061a 100%);
+    z-index: 0;
+  }
+
+  .bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* === SCANLINES === */
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+    );
+  }
+
+  /* === TOP BAR === */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #cc0000, #ff1a1a, #cc0000);
+    z-index: 30;
+  }
+
+  /* === HEADER === */
+  .header {
+    position: absolute;
+    top: 20px; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-badge {
+    background: linear-gradient(135deg, #cc0000, #990000);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    padding: 6px 18px;
+    letter-spacing: 4px;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px rgba(204,0,0,0.4);
+  }
+
+  .logo-sub {
+    color: rgba(255,255,255,0.5);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .live-dot {
+    width: 10px; height: 10px;
+    background: #ff0000;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(255,0,0,0.6);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .live-text {
+    color: #ff3333;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 3px;
+  }
+
+  .live-time {
+    color: rgba(255,255,255,0.4);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 13px;
+    margin-left: 4px;
+  }
+
+  /* === INTRO SCREEN === */
+  .intro-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #0d0d2e, #06061a);
+    opacity: 0;
+    animation: introAnim 8s ease-in-out forwards;
+  }
+
+  @keyframes introAnim {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; pointer-events: none; }
+  }
+
+  .intro-logo {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 72px;
+    color: #fff;
+    letter-spacing: 12px;
+    opacity: 0;
+    animation: introFadeIn 2s 0.5s ease-out forwards;
+    text-shadow: 0 0 40px rgba(204,0,0,0.4);
+  }
+
+  .intro-line {
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #cc0000, transparent);
+    margin: 20px 0;
+    animation: introLineGrow 1.5s 1.5s ease-out forwards;
+  }
+
+  .intro-tagline {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 18px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: introFadeIn 1.5s 2.5s ease-out forwards;
+  }
+
+  .intro-date {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 4px;
+    margin-top: 12px;
+    opacity: 0;
+    animation: introFadeIn 1s 3.5s ease-out forwards;
+  }
+
+  @keyframes introFadeIn {
+    to { opacity: 1; }
+  }
+
+  @keyframes introLineGrow {
+    to { width: 300px; }
+  }
+
+  /* === NEWS CARD AREA === */
+  .news-stage {
+    position: absolute;
+    top: 80px;
+    left: 40px;
+    right: 40px;
+    bottom: 160px;
+    z-index: 10;
+  }
+
+  .news-card {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .news-card.active {
+    animation: cardIn 0.8s ease-out forwards;
+  }
+
+  .news-card.exit {
+    animation: cardOut 0.6s ease-in forwards;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes cardOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+  }
+
+  /* Category tag */
+  .card-category-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .card-category {
+    background: linear-gradient(135deg, #cc0000, #990000);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 3px;
+  }
+
+  .card-number {
+    color: rgba(255,255,255,0.25);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+
+  .card-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(204,0,0,0.3), transparent);
+  }
+
+  /* Headline */
+  .card-headline {
+    color: #ffffff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 44px;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    max-width: 900px;
+    opacity: 0;
+    animation: textSlideIn 0.6s 0.3s ease-out forwards;
+  }
+
+  .news-card.active .card-headline {
+    animation: textSlideIn 0.6s 0.3s ease-out forwards;
+  }
+
+  @keyframes textSlideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Divider */
+  .card-divider {
+    width: 80px;
+    height: 3px;
+    background: #cc0000;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: dividerGrow 0.5s 0.5s ease-out forwards;
+  }
+
+  .news-card.active .card-divider {
+    animation: dividerGrow 0.5s 0.5s ease-out forwards;
+  }
+
+  @keyframes dividerGrow {
+    from { opacity: 0; width: 0; }
+    to { opacity: 1; width: 80px; }
+  }
+
+  /* Summary */
+  .card-summary {
+    color: rgba(255,255,255,0.55);
+    font-family: 'Roboto', sans-serif;
+    font-size: 20px;
+    line-height: 1.6;
+    max-width: 850px;
+    opacity: 0;
+    animation: textSlideIn 0.6s 0.6s ease-out forwards;
+  }
+
+  .news-card.active .card-summary {
+    animation: textSlideIn 0.6s 0.6s ease-out forwards;
+  }
+
+  /* Source */
+  .card-source {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 30px;
+    opacity: 0;
+    animation: textSlideIn 0.5s 0.8s ease-out forwards;
+  }
+
+  .news-card.active .card-source {
+    animation: textSlideIn 0.5s 0.8s ease-out forwards;
+  }
+
+  .source-icon {
+    width: 8px; height: 8px;
+    background: #cc0000;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(204,0,0,0.5);
+  }
+
+  .source-text {
+    color: rgba(255,255,255,0.3);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* === DATA PANEL === */
+  .data-panel {
+    position: absolute;
+    bottom: 160px;
+    left: 40px;
+    right: 40px;
+    z-index: 15;
+    display: none;
+  }
+
+  .data-panel.show {
+    display: flex;
+    gap: 0;
+    animation: cardIn 0.8s ease-out forwards;
+  }
+
+  .data-box {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 20px 24px;
+    text-align: center;
+  }
+
+  .data-box:first-child { border-radius: 6px 0 0 6px; }
+  .data-box:last-child { border-radius: 0 6px 6px 0; }
+
+  .data-label {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .data-value {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .data-sub {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .data-sub.up { color: #00cc66; }
+  .data-sub.down { color: #ff4444; }
+  .data-sub.neutral { color: rgba(255,255,255,0.3); }
+
+  /* === PROGRESS BAR === */
+  .progress-container {
+    position: absolute;
+    bottom: 135px;
+    left: 40px;
+    right: 40px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .progress-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .progress-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: all 0.3s ease;
+  }
+
+  .progress-dot.active {
+    background: #cc0000;
+    box-shadow: 0 0 8px rgba(204,0,0,0.5);
+  }
+
+  .progress-dot.done {
+    background: rgba(204,0,0,0.4);
+  }
+
+  .progress-bar-track {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #cc0000, #ff3333);
+    width: 0%;
+    transition: width 0.3s linear;
+  }
+
+  /* === BOTTOM TICKER === */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 130px;
+    z-index: 20;
+  }
+
+  .headline-strip {
+    height: 50px;
+    background: linear-gradient(180deg, #1a1a3a, #0d0d2a);
+    border-top: 2px solid rgba(204,0,0,0.5);
+    display: flex;
+    align-items: center;
+  }
+
+  .headline-strip-label {
+    background: linear-gradient(180deg, #cc0000, #990000);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 3px;
+    padding: 0 20px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .headline-strip-text {
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1px;
+    padding: 0 24px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .ticker-strip {
+    height: 80px;
+    background: linear-gradient(180deg, #0a0a20, #050518);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-strip-label {
+    background: linear-gradient(135deg, #cc0000, #aa0000);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 0 16px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .ticker-track {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .ticker-scroll {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: tickerScroll 45s linear infinite;
+  }
+
+  @keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 28px;
+    flex-shrink: 0;
+  }
+
+  .ticker-item-label {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+  }
+
+  .ticker-item-value {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .ticker-sep {
+    color: rgba(255,255,255,0.12);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* === CORNER ACCENTS === */
+  .corner { position: absolute; width: 40px; height: 40px; z-index: 5; }
+  .corner.tl { top: 12px; left: 12px; border-top: 2px solid rgba(204,0,0,0.2); border-left: 2px solid rgba(204,0,0,0.2); }
+  .corner.tr { top: 12px; right: 12px; border-top: 2px solid rgba(204,0,0,0.2); border-right: 2px solid rgba(204,0,0,0.2); }
+  .corner.bl { bottom: 135px; left: 12px; border-bottom: 2px solid rgba(204,0,0,0.2); border-left: 2px solid rgba(204,0,0,0.2); }
+  .corner.br { bottom: 135px; right: 12px; border-bottom: 2px solid rgba(204,0,0,0.2); border-right: 2px solid rgba(204,0,0,0.2); }
+</style>
+</head>
+<body>
+
+  <div class="bg"></div>
+  <div class="scanlines"></div>
+  <div class="top-bar"></div>
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-badge">MEMES 24H</div>
+      <div class="logo-sub">Daily Briefing</div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      <span class="live-text">LIVE</span>
+      <span class="live-time" id="liveTime"></span>
+    </div>
+  </div>
+
+  <!-- Intro -->
+  <div class="intro-screen" id="introScreen">
+    <div class="intro-logo">MEMES 24H</div>
+    <div class="intro-line"></div>
+    <div class="intro-tagline">Your Daily Briefing</div>
+    <div class="intro-date" id="introDate"></div>
+  </div>
+
+  <!-- News Cards -->
+  <div class="news-stage" id="newsStage"></div>
+
+  <!-- Data Panel (shown on market news) -->
+  <div class="data-panel" id="dataPanel">
+    <div class="data-box">
+      <div class="data-label">Memes Floor</div>
+      <div class="data-value">0.0139 ETH</div>
+      <div class="data-sub neutral">Avg 0.08 ETH</div>
+    </div>
+    <div class="data-box">
+      <div class="data-label">24h Volume</div>
+      <div class="data-value">1.21 ETH</div>
+      <div class="data-sub neutral">15 Sales</div>
+    </div>
+    <div class="data-box">
+      <div class="data-label">7d Volume</div>
+      <div class="data-value">10.64 ETH</div>
+      <div class="data-sub neutral">140 Sales</div>
+    </div>
+    <div class="data-box">
+      <div class="data-label">Holders</div>
+      <div class="data-value">10,518</div>
+      <div class="data-sub neutral">94K Total Sales</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-container" id="progressContainer">
+    <div class="progress-dots" id="progressDots"></div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <div class="headline-strip">
+      <div class="headline-strip-label">NEWS</div>
+      <div class="headline-strip-text" id="headlineStrip"></div>
+    </div>
+    <div class="ticker-strip">
+      <div class="ticker-strip-label">MARKET</div>
+      <div class="ticker-track">
+        <div class="ticker-scroll">
+          <div class="ticker-item"><span class="ticker-item-label">Memes Floor</span><span class="ticker-item-value">0.0139 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">24h Vol</span><span class="ticker-item-value">1.21 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">7d Vol</span><span class="ticker-item-value">10.64 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">Holders</span><span class="ticker-item-value">10,518</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">Pebbles</span><span class="ticker-item-value">0.595 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">Gradient</span><span class="ticker-item-value">6,529 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">Last Sale</span><span class="ticker-item-value">Molly Wop 0.069 ETH</span></div><div class="ticker-sep">|</div>
+          <!-- duplicate -->
+          <div class="ticker-item"><span class="ticker-item-label">Memes Floor</span><span class="ticker-item-value">0.0139 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">24h Vol</span><span class="ticker-item-value">1.21 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">7d Vol</span><span class="ticker-item-value">10.64 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">Holders</span><span class="ticker-item-value">10,518</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">Pebbles</span><span class="ticker-item-value">0.595 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">Gradient</span><span class="ticker-item-value">6,529 ETH</span></div><div class="ticker-sep">|</div>
+          <div class="ticker-item"><span class="ticker-item-label">Last Sale</span><span class="ticker-item-value">Molly Wop 0.069 ETH</span></div><div class="ticker-sep">|</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === NEWS DATA ===
+    const NEWS = [
+      {
+        category: 'MARKET',
+        headline: '"Molly Wop" Sells for 0.069 ETH as The Memes See 15 Sales Today',
+        summary: 'Daily volume hits 1.21 ETH across 15 trades. Notable sales include "Open Roads, Open Metaverse" at 0.08 ETH and a double sale of "no, really this is going to be our year" at 0.18-0.19 ETH.',
+        source: 'OpenSea Data',
+        showData: true
+      },
+      {
+        category: 'MAIN STAGE',
+        headline: 'QuantumSpirit Submits "Cerebrum" — Glitch Art Enters The Vote',
+        summary: 'A signature glitch aesthetic piece exploring digital distortion and memory. Created with Midjourney AI and Photoshop, inspired by flowers at night reimagined through layered distortions.',
+        source: 'The Memes - Main Stage',
+        showData: false
+      },
+      {
+        category: 'COMMUNITY',
+        headline: 'AEZY: "6529 Isn\'t Social Media — It\'s a Network Where We Network"',
+        summary: 'In maybe\'s dive bar, artist AEZY shares finding energy by stepping away from Twitter. "The art lives in the details. If we lose them it\'s not worth anymore."',
+        source: "maybe's dive bar",
+        showData: false
+      },
+      {
+        category: 'COMMUNITY',
+        headline: '"Larpmaxxing" — DeltaSauce Coins the Latest Web3 Term',
+        summary: 'Sunday buzz in the dive bar: new auctions launched by RonnyGuy, blake69 submits new work, and the community debates the loss of nuance in crypto culture.',
+        source: "maybe's dive bar",
+        showData: false
+      },
+      {
+        category: 'MARKET',
+        headline: 'Pebbles Hold at 0.595 ETH — Gradient Remains Ultra-Rare at 6,529 ETH',
+        summary: 'Pebbles by Zeblocks: 445 holders, 1.4 ETH weekly volume. 6529 Gradient: only 70 holders, zero sales in 30 days. Total Memes lifetime volume: 26,787 ETH across 94,428 trades.',
+        source: 'OpenSea Data',
+        showData: true
+      }
+    ];
+
+    // === CLOCK ===
+    function updateTime() {
+      const now = new Date();
+      const h = String(now.getUTCHours()).padStart(2, '0');
+      const m = String(now.getUTCMinutes()).padStart(2, '0');
+      const s = String(now.getUTCSeconds()).padStart(2, '0');
+      document.getElementById('liveTime').textContent = `${h}:${m}:${s} GMT`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Date
+    const now = new Date();
+    document.getElementById('introDate').textContent =
+      now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+
+    // === BUILD NEWS CARDS ===
+    const stage = document.getElementById('newsStage');
+    NEWS.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'news-card';
+      card.id = `card-${i}`;
+      card.innerHTML = `
+        <div class="card-category-bar">
+          <div class="card-category">${item.category}</div>
+          <div class="card-number">${String(i + 1).padStart(2, '0')} / ${String(NEWS.length).padStart(2, '0')}</div>
+          <div class="card-line"></div>
+        </div>
+        <div class="card-headline">${item.headline}</div>
+        <div class="card-divider"></div>
+        <div class="card-summary">${item.summary}</div>
+        <div class="card-source">
+          <div class="source-icon"></div>
+          <div class="source-text">Source: ${item.source}</div>
+        </div>
+      `;
+      stage.appendChild(card);
+    });
+
+    // Progress dots
+    const dotsEl = document.getElementById('progressDots');
+    NEWS.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'progress-dot';
+      dot.id = `dot-${i}`;
+      dotsEl.appendChild(dot);
+    });
+
+    // === SLIDESHOW ENGINE ===
+    const CARD_DURATION = 8000;
+    const INTRO_DURATION = 7500;
+    let currentIndex = -1;
+
+    function showCard(index) {
+      // Exit previous
+      if (currentIndex >= 0) {
+        const prev = document.getElementById(`card-${currentIndex}`);
+        prev.classList.remove('active');
+        prev.classList.add('exit');
+        const prevDot = document.getElementById(`dot-${currentIndex}`);
+        prevDot.classList.remove('active');
+        prevDot.classList.add('done');
+      }
+
+      currentIndex = index % NEWS.length;
+      const card = document.getElementById(`card-${currentIndex}`);
+      const dot = document.getElementById(`dot-${currentIndex}`);
+
+      // Reset animations
+      setTimeout(() => {
+        document.querySelectorAll('.news-card.exit').forEach(c => {
+          c.classList.remove('exit');
+        });
+        card.classList.add('active');
+        dot.classList.add('active');
+
+        // Headline strip
+        document.getElementById('headlineStrip').textContent = NEWS[currentIndex].headline.toUpperCase();
+
+        // Data panel
+        const dp = document.getElementById('dataPanel');
+        if (NEWS[currentIndex].showData) {
+          dp.classList.add('show');
+        } else {
+          dp.classList.remove('show');
+        }
+
+        // Progress bar
+        animateProgress();
+      }, 200);
+    }
+
+    function animateProgress() {
+      const fill = document.getElementById('progressFill');
+      fill.style.transition = 'none';
+      fill.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          fill.style.transition = `width ${CARD_DURATION}ms linear`;
+          fill.style.width = '100%';
+        });
+      });
+    }
+
+    function startSlideshow() {
+      showCard(0);
+      setInterval(() => {
+        showCard(currentIndex + 1);
+      }, CARD_DURATION);
+    }
+
+    // Start after intro
+    setTimeout(startSlideshow, INTRO_DURATION);
+  </script>
+
+</body>
+</html>
