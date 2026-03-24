@@ -974,6 +974,44 @@ a:hover { text-decoration: underline; }
   color: rgba(255,255,255,0.25);
 }
 
+/* === ALERT BANNER === */
+.alert-banner {
+  background: linear-gradient(90deg, #cc2200, #991100);
+  color: #fff;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  animation: alertPulse 3s ease-in-out infinite;
+}
+
+.alert-banner a {
+  color: #ffcc00;
+  text-decoration: underline;
+}
+
+@keyframes alertPulse {
+  0%, 100% { background: linear-gradient(90deg, #cc2200, #991100); }
+  50% { background: linear-gradient(90deg, #991100, #cc2200); }
+}
+
+.alert-dot {
+  width: 8px; height: 8px;
+  background: #ffcc00;
+  border-radius: 50%;
+  animation: alertDotBlink 1s step-end infinite;
+}
+
+@keyframes alertDotBlink {
+  50% { opacity: 0.3; }
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
   .proposals-grid { grid-template-columns: 1fr; }

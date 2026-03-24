@@ -738,6 +738,31 @@ window.clearGHToken = function() {
   showToast('Token removed.', 'info');
 };
 
+// === ALERT BANNER ===
+async function updateAlertBanner() {
+  try {
+    const proposals = await listProposals();
+    const active = proposals.filter(p => p.status === 'active' && new Date(p.expiresAt) > new Date());
+    const banner = document.getElementById('alertBanner');
+
+    if (active.length > 0 && banner) {
+      const nearest = active.reduce((a, b) =>
+        new Date(a.expiresAt) < new Date(b.expiresAt) ? a : b
+      );
+      const daysLeft = Math.max(0, Math.ceil((new Date(nearest.expiresAt) - new Date()) / 86400000));
+
+      banner.style.display = 'flex';
+      banner.innerHTML = `
+        <span class="alert-dot"></span>
+        ${active.length} active proposal${active.length > 1 ? 's' : ''} need${active.length === 1 ? 's' : ''} your vote!
+        Nearest deadline: ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left.
+        <a href="#/">Vote now</a>
+      `;
+    }
+  } catch (e) {}
+}
+
 // === INIT ===
 renderUserArea();
 route();
+updateAlertBanner();
