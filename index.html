@@ -757,8 +757,9 @@
   </div>
 
   <script>
-    // === NEWS DATA ===
-    const NEWS = [
+    // === NEWS DATA (loaded dynamically, fallback hardcoded) ===
+    const NEWS_URL = 'https://gist.githubusercontent.com/sertx92/1b84f8b762cd2f6640ed7086cc9b7c69/raw/news-latest.json';
+    const NEWS_FALLBACK = [
       {
         category: 'MARKET',
         headline: '"Molly Wop" Sells for 0.069 ETH — 15 Sales Today',
@@ -876,8 +877,49 @@
       }
     ];
 
+    let NEWS = [...NEWS_FALLBACK];
     const CARD_DURATION = 8000;
     let currentIndex = -1;
+
+    // === DYNAMIC NEWS LOADER ===
+    async function loadDynamicNews() {
+      try {
+        const res = await fetch(NEWS_URL + '?t=' + Date.now());
+        const data = await res.json();
+        if (data.news && data.news.length > 0) {
+          NEWS = data.news;
+          // Rebuild cards
+          const stage = document.getElementById('newsStage');
+          stage.innerHTML = '';
+          buildCards();
+          currentIndex = -1;
+          showCard(0);
+          resetAutoplay();
+
+          // Update ticker if available
+          if (data.ticker && data.ticker.length > 0) {
+            updateTickerFromData(data.ticker);
+          }
+
+          console.log(`Loaded ${NEWS.length} news from AI (${data.generated_at})`);
+        }
+      } catch (e) {
+        console.log('Using fallback news:', e.message);
+      }
+    }
+
+    function updateTickerFromData(tickerItems) {
+      const el = document.getElementById('tickerContent');
+      if (!el) return;
+      const html = tickerItems.map(t =>
+        `<div class="ticker-item"><span class="ticker-item-label">${t.label}</span><span class="ticker-item-value">${t.value}</span></div><div class="ticker-separator">|</div>`
+      ).join('');
+      el.innerHTML = html + html; // duplicate for loop
+      el.style.animation = 'none';
+      el.offsetHeight;
+      const duration = Math.max(40, tickerItems.length * 5);
+      el.style.animation = `tickerScroll ${duration}s linear infinite`;
+    }
 
     // === CLOCK ===
     function updateTime() {
@@ -895,63 +937,64 @@
     document.getElementById('screenDate').textContent =
       now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
 
-    // === BUILD CARDS ===
-    const stage = document.getElementById('newsStage');
-    NEWS.forEach((item, i) => {
-      const card = document.createElement('div');
-      card.className = 'news-card';
-      card.id = `card-${i}`;
+    // === BUILD CARDS (reusable function) ===
+    function buildCards() {
+      const stage = document.getElementById('newsStage');
+      NEWS.forEach((item, i) => {
+        const card = document.createElement('div');
+        card.className = 'news-card';
+        card.id = `card-${i}`;
 
-      let dataHTML = '';
-      if (item.dataBoxes) {
-        dataHTML = '<div class="card-data">' +
-          item.dataBoxes.map(d =>
-            `<div class="data-box">
-              <div class="data-label">${d.label}</div>
-              <div class="data-value">${d.value}</div>
-              <div class="data-sub">${d.sub}</div>
-            </div>`
-          ).join('') +
-          '</div>';
-      }
+        let dataHTML = '';
+        if (item.dataBoxes) {
+          dataHTML = '<div class="card-data">' +
+            item.dataBoxes.map(d =>
+              `<div class="data-box">
+                <div class="data-label">${d.label}</div>
+                <div class="data-value">${d.value}</div>
+                <div class="data-sub">${d.sub}</div>
+              </div>`
+            ).join('') +
+            '</div>';
+        }
 
-      let imageHTML = '';
-      if (item.image) {
-        imageHTML = `
-          <div class="card-preview">
-            <img src="${item.image.url}" alt="${item.image.label}">
-            <div class="card-preview-label">${item.image.label}</div>
-          </div>`;
-      }
+        let imageHTML = '';
+        if (item.image) {
+          imageHTML = `
+            <div class="card-preview">
+              <img src="${item.image.url}" alt="${item.image.label}">
+              <div class="card-preview-label">${item.image.label}</div>
+            </div>`;
+        }
 
-      const hasImage = item.image ? true : false;
+        const linkHTML = item.link
+          ? `<a href="${item.link}" target="_blank" class="source-link">View &rarr;</a>`
+          : '';
 
-      const linkHTML = item.link
-        ? `<a href="${item.link}" target="_blank" class="source-link">View &rarr;</a>`
-        : '';
-
-      card.innerHTML = `
-        <div class="card-cat-bar">
-          <div class="card-cat">${item.category}</div>
-          <div class="card-cat-line"></div>
-        </div>
-        <div class="card-body">
-          <div class="card-text">
-            <div class="card-headline">${item.headline}</div>
-            <div class="card-divider"></div>
-            <div class="card-summary">${item.summary}</div>
-            ${dataHTML}
-            <div class="card-source">
-              <div class="source-dot"></div>
-              <div class="source-text">${item.source}</div>
-              ${linkHTML}
-            </div>
+        card.innerHTML = `
+          <div class="card-cat-bar">
+            <div class="card-cat">${item.category}</div>
+            <div class="card-cat-line"></div>
           </div>
-          ${imageHTML}
-        </div>
-      `;
-      stage.appendChild(card);
-    });
+          <div class="card-body">
+            <div class="card-text">
+              <div class="card-headline">${item.headline}</div>
+              <div class="card-divider"></div>
+              <div class="card-summary">${item.summary}</div>
+              ${dataHTML}
+              <div class="card-source">
+                <div class="source-dot"></div>
+                <div class="source-text">${item.source || ''}</div>
+                ${linkHTML}
+              </div>
+            </div>
+            ${imageHTML}
+          </div>
+        `;
+        stage.appendChild(card);
+      });
+    }
+    buildCards();
 
     // === SLIDESHOW ===
     let autoTimer = null;
@@ -1003,9 +1046,14 @@
       resetAutoplay();
     });
 
-    // Start slideshow
+    // Start slideshow with fallback, then try dynamic news
     showCard(0);
     autoTimer = setInterval(() => showCard(currentIndex + 1), CARD_DURATION);
+
+    // Load AI-generated news (replaces fallback if available)
+    loadDynamicNews();
+    // Refresh news every 6 hours
+    setInterval(loadDynamicNews, 6 * 60 * 60 * 1000);
 
     // ===================================================
     // LIVE TICKER ENGINE - Fetches real-time data
