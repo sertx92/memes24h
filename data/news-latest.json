@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-03-24T14:56:18.929825+00:00",
+  "model": "google/gemma-3-27b-it:free",
+  "news": [
+    {
+      "category": "MAIN STAGE",
+      "headline": "#1 dangiuz Leads with 93.7M TDH",
+      "summary": "#1 \"Cogito, ergo sum\" by dangiuz (93.7M TDH, 52 voters) | #20 \"Network for Good \" by BrynnAlise (4.0M TDH, 19 voters) | #1 \"None\" by Kostas_Photo (765K TDH, 7 voters)",
+      "source": "The Memes - Main Stage",
+      "link": "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
+      "image": {
+        "url": "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_9d8defd4-e381-42f7-b387-b9db2852ff7f/392a10e2-c774-4ab4-a1d4-3aed12b1ed27.jpg",
+        "label": "#1 Cogito, ergo sum"
+      },
+      "dataBoxes": [
+        {
+          "label": "#1 dangiuz",
+          "value": "93.7M",
+          "sub": "TDH (52 votes)"
+        },
+        {
+          "label": "#20 BrynnAlise",
+          "value": "4.0M",
+          "sub": "TDH (19 votes)"
+        },
+        {
+          "label": "#1 Kostas_Photo",
+          "value": "765K",
+          "sub": "TDH (7 votes)"
+        }
+      ]
+    },
+    {
+      "category": "COMMUNITY",
+      "headline": "Active Discussion in maybe's dive bar",
+      "summary": "20 messages in the last hour. Latest: eddie: i seized more of my card, was discussing with @[RegularDad], would be easier accounting-wise if artists could jus",
+      "source": "maybe's dive bar",
+      "link": "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
+      "image": null,
+      "dataBoxes": null
+    },
+    {
+      "category": "COMMUNITY",
+      "headline": "Active Discussion in The Memes - Main Stage",
+      "summary": "14 messages in the last hour. Latest: Burnasso: THANKS for The Votes, I\u2019m Totally Surprised, @[johndoe8891]...!! I\u2019m Touched and Honored...!! \ud83d\udc27\u2764\ufe0f",
+      "source": "The Memes - Main Stage",
+      "link": "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
+      "image": null,
+      "dataBoxes": null
+    },
+    {
+      "category": "COMMUNITY",
+      "headline": "Active Discussion in SuperRare Chat & Application Boost",
+      "summary": "1 messages in the last hour. Latest: AshtonTekno: gm sr frens!",
+      "source": "SuperRare Chat & Application Boost",
+      "link": "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd",
+      "image": null,
+      "dataBoxes": null
+    }
+  ],
+  "ticker": []
+}
