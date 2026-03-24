@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>6529 NEWS 24H</title>
+<title>6529 NEWS</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Teko:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 
@@ -71,7 +71,7 @@
   .logo { display: flex; align-items: center; }
   .logo-num {
     font-family: 'Teko', sans-serif; font-weight: 700; font-size: 48px; color: #fff;
-    background: linear-gradient(180deg, #cc2200, #991100); padding: 0 14px; line-height: 1;
+    background: linear-gradient(180deg, #cc2200, #991100); padding: 2px 14px 6px; line-height: 0.85;
     letter-spacing: 1px;
     box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1);
   }
@@ -79,11 +79,6 @@
     font-family: 'Teko', sans-serif; font-weight: 700; font-size: 48px; color: #fff;
     letter-spacing: 4px; margin-left: 8px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  }
-  .logo-24h {
-    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 20px; color: #ffcc00;
-    background: rgba(0,0,0,0.3); padding: 2px 10px; margin-left: 12px;
-    border: 1px solid rgba(255,204,0,0.3); letter-spacing: 2px;
   }
 
   .top-right { margin-left: auto; display: flex; align-items: center; gap: 20px; }
@@ -299,12 +294,12 @@
     position: absolute; left: 0;
   }
   @keyframes tickerScroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
-  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 0 20px; flex-shrink: 0; }
+  .ticker-item { display: flex; align-items: center; gap: 6px; padding: 0 16px; flex-shrink: 0; }
   .ticker-item-label {
-    font-family: 'Teko', sans-serif; font-size: 14px; font-weight: 600;
+    font-family: 'Teko', sans-serif; font-size: 13px; font-weight: 600;
     letter-spacing: 1.5px; color: rgba(80,160,255,0.4); text-transform: uppercase;
   }
-  .ticker-item-value { font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 500; color: #ffffff; }
+  .ticker-item-value { font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 500; color: #ffffff; }
   .ticker-memes .ticker-item-label { color: #ff5533; font-size: 16px; }
   .ticker-memes .ticker-item-value { color: #ffffff; }
   .ticker-sr .ticker-item-label { color: #aa66ff; font-size: 16px; }
@@ -362,7 +357,7 @@
 
   .intro-red-line {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 0; height: 4px; background: #cc2200; z-index: 5;
+    width: 0; height: 3px; background: #cc2200; z-index: 5;
     animation: introLineGrow 0.4s 0.4s ease-out forwards;
     box-shadow: 0 0 20px rgba(204,34,0,0.4);
   }
@@ -385,7 +380,7 @@
   .intro-logo-row { display: flex; align-items: center; justify-content: center; }
   .intro-6529 {
     font-family: 'Teko', sans-serif; font-weight: 700; font-size: 120px; color: #fff;
-    background: linear-gradient(180deg, #cc2200, #991100); padding: 0 24px; line-height: 0.9;
+    background: linear-gradient(180deg, #cc2200, #991100); padding: 4px 24px 10px; line-height: 0.85;
     letter-spacing: 2px;
     box-shadow: inset 0 -4px 0 rgba(0,0,0,0.3), inset 0 4px 0 rgba(255,255,255,0.1), 0 0 40px rgba(204,34,0,0.3);
   }
@@ -443,12 +438,10 @@
     <div class="logo">
       <span class="logo-num">6529</span>
       <span class="logo-news">NEWS</span>
-      <span class="logo-24h">24H</span>
     </div>
     <div class="top-right">
       <a href="https://sertx92.github.io/memes24h/governance/" target="_blank" class="gov-btn">GOV</a>
       <button class="tool-btn" id="btnScreen" title="Screenshot">SCREEN</button>
-      <button class="tool-btn" id="btnGif" title="Record GIF">GIF</button>
       <div class="live-indicator"><div class="live-dot"></div><span class="live-text">LIVE</span></div>
       <span class="clock" id="clock">--:--:--</span>
       <span class="date-display" id="dateDisplay"></span>
@@ -686,7 +679,8 @@
     setTimeout(() => {
       document.querySelectorAll('.news-card.exit').forEach(c => c.classList.remove('exit'));
       card.classList.add('active');
-      document.getElementById('headlineText').textContent = NEWS[currentIndex].headline.toUpperCase();
+      const hlText = NEWS[currentIndex].headline.toUpperCase() + (NEWS[currentIndex].source ? ' | ' + NEWS[currentIndex].source.toUpperCase() : '');
+      document.getElementById('headlineText').textContent = hlText;
       document.getElementById('screenCounter').textContent = `${String(currentIndex+1).padStart(2,'0')}/${String(NEWS.length).padStart(2,'0')}`;
       document.getElementById('catTab').textContent = NEWS[currentIndex].category;
       const fill = document.getElementById('progressFill');
@@ -728,64 +722,6 @@
     btn.textContent = 'SCREEN';
   });
 
-  // GIF recording (captures one full cycle of news cards)
-  let gifRecording = false;
-  document.getElementById('btnGif').addEventListener('click', async () => {
-    if (gifRecording) return;
-    gifRecording = true;
-    const btn = document.getElementById('btnGif');
-    btn.classList.add('recording');
-    btn.textContent = 'REC...';
-
-    // Load gif.js
-    if (!window.GIF) {
-      await new Promise((resolve) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js';
-        s.onload = resolve;
-        document.head.appendChild(s);
-      });
-    }
-
-    const gif = new GIF({
-      workers: 2,
-      quality: 10,
-      width: 1080,
-      height: 1080,
-      workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
-    });
-
-    const totalFrames = NEWS.length;
-    const frameDelay = CARD_DURATION;
-
-    // Capture each news card
-    for (let i = 0; i < totalFrames; i++) {
-      showCard(i);
-      await new Promise(r => setTimeout(r, 800)); // Wait for animation
-      try {
-        const canvas = await html2canvas(document.getElementById('container'), {
-          width: 1080, height: 1080, scale: 0.5,
-          backgroundColor: '#06081a',
-          useCORS: true, allowTaint: true
-        });
-        gif.addFrame(canvas, { delay: frameDelay, copy: true });
-        btn.textContent = `${i+1}/${totalFrames}`;
-      } catch(e) { console.error('Frame failed:', e); }
-    }
-
-    gif.on('finished', (blob) => {
-      const link = document.createElement('a');
-      link.download = '6529news_' + Date.now() + '.gif';
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      btn.classList.remove('recording');
-      btn.textContent = 'GIF';
-      gifRecording = false;
-      resetAutoplay();
-    });
-
-    gif.render();
-  });
 </script>
 </body>
 </html>

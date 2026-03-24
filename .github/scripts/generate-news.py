@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MEMES 24H - AI News Generator
+6529 NEWS - AI News Generator
 Always includes: Market Recap, Top 3 Memes, Top 3 SuperRare
 Then adds up to 10 additional AI-generated news.
 Filters out low-activity waves (<3 msgs in 6h).
@@ -25,6 +25,8 @@ SR_WAVE_ID = 'd22e3046-a00e-48b9-b245-a339a44c37cd'
 TDH_MILLIONAIRES_WAVE_ID = '9cc8118b-0ae0-4b22-8d15-3b8ed6604bac'
 
 # punk6529 tracking
+DIVEBAR_WAVE_ID = 'b38288e6-ca9d-45ce-8323-3dc5e094f04e'
+
 PUNK6529_HANDLE = 'punk6529'
 PUNK6529_PFP = 'https://d3lqz0a4bldqgf.cloudfront.net/pfp/production/413e24a8-b2d2-4746-a10e-d66575d0043f.webp?d=1714229232938'
 PUNK6529_MIN_MSGS = 5  # 5+ msgs in 6h = "6529 Talks about"
@@ -304,7 +306,7 @@ def generate_additional_news_ai(wave_data, max_news=7):
     if not OPENROUTER_KEY or not wave_data:
         return generate_additional_fallback(wave_data)
 
-    prompt = f"""You are a news editor for MEMES 24H, a daily broadcast covering the 6529 NFT ecosystem.
+    prompt = f"""You are a news editor for 6529 NEWS, a daily broadcast covering the 6529 NFT ecosystem.
 Today is {datetime.now(timezone.utc).strftime('%B %d, %Y')}.
 
 Below is significant wave/chat activity from the last 6 hours.
@@ -411,10 +413,143 @@ def generate_additional_fallback(wave_data):
 
 
 # =============================================
+# NEW SUBMISSIONS
+# =============================================
+
+def build_new_submissions():
+    """Fetch PARTICIPATION drops from Main Stage created after midnight UTC today."""
+    print("Checking new submissions today...")
+    midnight_ms = int(datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
+
+    # Fetch recent participation drops
+    data = fetch_json(f'https://api.6529.io/api/drops?wave_id={MEMES_WAVE_ID}&drop_type=PARTICIPATION&limit=20')
+    if not data:
+        return []
+
+    today_subs = []
+    for d in data:
+        if d['created_at'] >= midnight_ms:
+            media = d['parts'][0].get('media', []) if d.get('parts') else []
+            title = d.get('title') or (d['parts'][0].get('content', '')[:40] if d.get('parts') else 'Untitled')
+            author = d.get('author', {}).get('handle', '?')
+            img = media[0]['url'] if media else None
+            today_subs.append({'title': title, 'author': author, 'img': img})
+
+    if not today_subs:
+        print("  No new submissions today")
+        return []
+
+    count = len(today_subs)
+    print(f"  Found {count} new submission(s) today")
+
+    # Build summary
+    if count == 1:
+        s = today_subs[0]
+        summary = f'New submission: "{s["title"]}" by {s["author"]}.'
+        image = {'url': s['img'], 'label': f'{s["title"]} - {s["author"]}'} if s['img'] else None
+    else:
+        parts = [f'"{s["title"]}" by {s["author"]}' for s in today_subs[:4]]
+        summary = f'{count} new submissions today: ' + ' | '.join(parts)
+        if count > 4:
+            summary += f' and {count - 4} more.'
+        # Use first submission's image
+        image = {'url': today_subs[0]['img'], 'label': f'{count} new submissions'} if today_subs[0].get('img') else None
+
+    headline = f'{count} New Submission{"s" if count != 1 else ""} on Main Stage Today'
+
+    return [{
+        'category': 'NEW SUBMISSIONS',
+        'headline': headline,
+        'summary': summary,
+        'source': 'The Memes - Main Stage',
+        'link': f'https://6529.io/waves/{MEMES_WAVE_ID}',
+        'image': image,
+        'dataBoxes': None
+    }]
+
+
+# =============================================
+# DIVE BAR SUMMARY
+# =============================================
+
+def build_divebar_summary():
+    """Fetch recent activity from maybe's dive bar and create a summary card."""
+    print("Checking maybe's dive bar...")
+    drops = fetch_6529_drops(DIVEBAR_WAVE_ID, 20)
+    if not drops:
+        print("  Dive bar empty or inaccessible")
+        return []
+
+    now_ms = datetime.now(timezone.utc).timestamp() * 1000
+    twenty_four_h_ago = now_ms - 24 * 3600 * 1000
+    recent = [d for d in drops if d['created_at'] > twenty_four_h_ago]
+
+    if len(recent) < 5:
+        print(f"  Only {len(recent)} msgs in 24h (need 5+)")
+        return []
+
+    # Gather messages and authors
+    messages = []
+    authors = set()
+    for d in recent[:15]:
+        parts = d.get('parts', [])
+        content = (parts[0].get('content') or '')[:200] if parts else ''
+        author = d.get('author', {}).get('handle', '?')
+        if content and len(content) > 15:
+            messages.append(f'{author}: "{content}"')
+            authors.add(author)
+
+    # Try AI summarization
+    if OPENROUTER_KEY and messages:
+        try:
+            prompt = f"""Summarize these chat messages from "maybe's dive bar" (a 6529 NFT community chat) in 2-3 sentences. Focus on key topics discussed. Be concise and factual.
+
+Messages:
+{chr(10).join(messages[:8])}"""
+
+            body = json.dumps({
+                'model': AI_MODEL,
+                'messages': [{'role': 'user', 'content': prompt}],
+                'max_tokens': 200,
+                'temperature': 0.5
+            }).encode()
+
+            req = urllib.request.Request(
+                'https://openrouter.ai/api/v1/chat/completions',
+                data=body,
+                headers={
+                    'Authorization': f'Bearer {OPENROUTER_KEY}',
+                    'Content-Type': 'application/json'
+                }
+            )
+
+            with urllib.request.urlopen(req, timeout=30) as r:
+                result = json.loads(r.read())
+            summary = result['choices'][0]['message']['content'].strip()
+            print("  AI summary generated")
+        except Exception as e:
+            print(f"  AI summary failed: {e}, using template")
+            summary = f"{len(recent)} messages in the last 24h from {len(authors)} participants. " + ' | '.join(messages[:3])
+    else:
+        summary = f"{len(recent)} messages in the last 24h from {len(authors)} participants. " + ' | '.join(messages[:3])
+
+    print(f"  Dive bar active: {len(recent)} msgs, {len(authors)} participants")
+    return [{
+        'category': 'DIVE BAR',
+        'headline': f"Dive Bar Buzz: {len(recent)} Messages, {len(authors)} Voices",
+        'summary': summary,
+        'source': "maybe's dive bar",
+        'link': f'https://6529.io/waves/{DIVEBAR_WAVE_ID}',
+        'image': None,
+        'dataBoxes': None
+    }]
+
+
+# =============================================
 # OUTPUT
 # =============================================
 
-def build_output(fixed_news, variable_news, ticker_data):
+def build_output(fixed_news, variable_news, ticker_data, wave_activity=None):
     """Combine fixed + variable news, build ticker from market data."""
     all_news = fixed_news + variable_news
     all_news = all_news[:13]
@@ -428,6 +563,24 @@ def build_output(fixed_news, variable_news, ticker_data):
             ticker.append({'label': f"{m['name']} Total Vol", 'value': f"{m['total_volume']:.0f} ETH"})
         if m.get('total_sales', 0) > 0:
             ticker.append({'label': f"{m['name']} Total Sales", 'value': f"{m['total_sales']:,}"})
+
+    # Add top sale ticker item from sales news
+    for n in all_news:
+        if n.get('category') == 'SALES 24H' and n.get('dataBoxes'):
+            for db in n['dataBoxes']:
+                if db.get('label') == 'Top Sale':
+                    ticker.append({'label': 'Top Sale', 'value': f"{db['value']} ETH"})
+                    break
+            break
+
+    # Add wave activity indicators
+    if wave_activity:
+        total_msgs = sum(w.get('msgs_6h', 0) for w in wave_activity)
+        total_participants = len(set(p for w in wave_activity for p in w.get('participants', [])))
+        if total_msgs > 0:
+            ticker.append({'label': 'Wave Activity (6h)', 'value': f"{total_msgs} msgs"})
+        if total_participants > 0:
+            ticker.append({'label': 'Active Users', 'value': str(total_participants)})
 
     return {
         'generated_at': datetime.now(timezone.utc).isoformat(),
@@ -579,7 +732,7 @@ def build_tdh_millionaires_news():
 # =============================================
 
 def main():
-    print(f"=== MEMES 24H News Generator ===")
+    print(f"=== 6529 NEWS Generator ===")
     print(f"Time: {datetime.now(timezone.utc).isoformat()}")
 
     # Load config
@@ -615,7 +768,13 @@ def main():
     print("\n--- Fixed: TDH Millionaires ---")
     tdh_mill_news = build_tdh_millionaires_news()
 
-    fixed_news = market_news + memes_top3 + sr_top3 + punk6529_news + tdh_mill_news
+    print("\n--- Fixed: New Submissions ---")
+    new_subs_news = build_new_submissions()
+
+    print("\n--- Fixed: Dive Bar Summary ---")
+    divebar_news = build_divebar_summary()
+
+    fixed_news = market_news + memes_top3 + sr_top3 + punk6529_news + tdh_mill_news + new_subs_news + divebar_news
 
     # ---- VARIABLE NEWS (AI from chat waves ONLY, not Main Stage/SR) ----
     print("\n--- Gathering wave activity (min 3 msgs/6h, excluding Main Stage/SR) ---")
@@ -627,7 +786,7 @@ def main():
     variable_news = generate_additional_news_ai(wave_data, max_news=max(0, max_additional))
 
     # ---- BUILD OUTPUT ----
-    output = build_output(fixed_news, variable_news, ticker_data)
+    output = build_output(fixed_news, variable_news, ticker_data, wave_activity=wave_data)
     print(f"\n--- Total: {len(output['news'])} news items ({len(fixed_news)} fixed + {len(variable_news)} variable) ---")
 
     # ---- PUBLISH ----
