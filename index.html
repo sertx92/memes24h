@@ -383,16 +383,16 @@
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #2</span><span class="ticker-item-value">awhurst 556K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #3</span><span class="ticker-item-value">blake69 301K</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Vol</span><span class="ticker-item-value">26,787 ETH</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Sales</span><span class="ticker-item-value">94,428</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">24h Vol</span><span class="ticker-item-value">1.21 ETH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">24h Sales</span><span class="ticker-item-value">15</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #1</span><span class="ticker-item-value">dangiuz 98.6M</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #2</span><span class="ticker-item-value">BrynnAlise 4.0M</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #3</span><span class="ticker-item-value">MintFace 630K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #2</span><span class="ticker-item-value">awhurst 556K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #3</span><span class="ticker-item-value">blake69 301K</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Vol</span><span class="ticker-item-value">26,787 ETH</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Sales</span><span class="ticker-item-value">94,428</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">24h Vol</span><span class="ticker-item-value">1.21 ETH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">24h Sales</span><span class="ticker-item-value">15</span></div><div class="ticker-separator">|</div>
       </div>
     </div>
   </div>
@@ -428,12 +428,12 @@
     { category: "ART", headline: "Artists Express Gratitude for Votes and REP", summary: 'Multiple artists thanked voters. Minotaur_Man: "Many thanks for the REP." Community engagement drives the 6529 art scene.', source: "The Memes - Main Stage", link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077", image: null, dataBoxes: null }
   ];
 
-  // Headline bar extra news (different from card headlines)
-  const HEADLINE_EXTRAS = [
-    "MEMES COLLECTION: 94,428 TOTAL SALES | 26,787 ETH LIFETIME VOLUME",
-    "PEBBLES FLOOR: 0.595 ETH | 445 HOLDERS",
-    "ACTIVE COMMUNITY: MULTIPLE WAVES BUZZING WITH DISCUSSION",
-    "GOVERNANCE: VOTE ON NEWS SOURCES WITH YOUR TDH"
+  // Headline bar: different content from cards (loaded dynamically)
+  let HEADLINE_EXTRAS = [
+    "DIVE BAR: COMMUNITY DISCUSSIONS ONGOING",
+    "PEBBLES: FLOOR 0.595 ETH",
+    "GOVERNANCE: VOTE ON NEWS SOURCES WITH YOUR TDH",
+    "6529 NEWS: DECENTRALIZED NEWS POWERED BY TDH"
   ];
 
   let NEWS = [...NEWS_FALLBACK];
@@ -453,6 +453,7 @@
         showCard(0);
         resetAutoplay();
         if (data.ticker && data.ticker.length > 0) updateTickerFromData(data.ticker);
+        if (data.headline_extras && data.headline_extras.length > 0) HEADLINE_EXTRAS = data.headline_extras;
       }
     } catch (e) { console.log('Using fallback:', e.message); }
   }

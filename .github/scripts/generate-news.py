@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 6529 NEWS - AI News Generator
-Always includes: Market Recap, Top 3 Memes, Top 3 SuperRare
-Then adds up to 10 additional AI-generated news.
-Filters out low-activity waves (<3 msgs in 6h).
+FIXED cards: SR Top 3, Memes Top 3, Minting Status, Sales Recap
+CONDITIONAL: punk6529 activity, dive bar hot topic, new submissions
+HEADLINE BAR: dive bar topics, pebbles market, high sales, sweeps
+TICKER: 24h volume, 24h sales, floor, leaderboard
 """
 
 import json
 import os
-import sys
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
@@ -16,25 +16,19 @@ from datetime import datetime, timezone, timedelta
 OPENROUTER_KEY = os.environ.get('OPENROUTER_KEY', '')
 OPENSEA_KEY = os.environ.get('OPENSEA_KEY', '0763c7f2c4104d288f734c0f91602913')
 AI_MODEL = 'google/gemma-3-27b-it:free'
-GIST_ID = os.environ.get('GIST_ID', '1b84f8b762cd2f6640ed7086cc9b7c69')
+GIST_ID = os.environ.get('GIST_ID', '')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
-MIN_MSGS_6H = 3  # Minimum messages in 6 hours to be newsworthy
 
 MEMES_WAVE_ID = 'b6128077-ea78-4dd9-b381-52c4eadb2077'
 SR_WAVE_ID = 'd22e3046-a00e-48b9-b245-a339a44c37cd'
-TDH_MILLIONAIRES_WAVE_ID = '9cc8118b-0ae0-4b22-8d15-3b8ed6604bac'
-
-# punk6529 tracking
 DIVEBAR_WAVE_ID = 'b38288e6-ca9d-45ce-8323-3dc5e094f04e'
-
 PUNK6529_HANDLE = 'punk6529'
 PUNK6529_PFP = 'https://d3lqz0a4bldqgf.cloudfront.net/pfp/production/413e24a8-b2d2-4746-a10e-d66575d0043f.webp?d=1714229232938'
-PUNK6529_MIN_MSGS = 5  # 5+ msgs in 6h = "6529 Talks about"
 
+MEMES_CONTRACT = '0x33fd426905f149f8376e227d0c9d3340aad17af1'
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data', 'waves-config.json')
 
 
-# === API HELPERS ===
 def fetch_json(url, headers=None):
     req = urllib.request.Request(url)
     if headers:
@@ -48,757 +42,426 @@ def fetch_json(url, headers=None):
         return None
 
 
-def fetch_6529_drops(wave_id, limit=20):
-    return fetch_json(f'https://api.6529.io/api/drops?wave_id={wave_id}&limit={limit}') or []
+def format_tdh(tdh):
+    if tdh >= 1_000_000: return f"{tdh/1_000_000:.1f}M"
+    if tdh >= 1_000: return f"{tdh/1_000:.0f}K"
+    return str(tdh)
 
 
-def fetch_ranked_submissions(wave_id, pages=30):
-    """Fetch top ranked submissions from a wave."""
+def ai_summarize(prompt_text, max_tokens=250):
+    """Call AI for summarization. Returns None on failure."""
+    if not OPENROUTER_KEY:
+        return None
+    try:
+        body = json.dumps({
+            'model': AI_MODEL,
+            'messages': [{'role': 'user', 'content': prompt_text}],
+            'max_tokens': max_tokens, 'temperature': 0.5
+        }).encode()
+        req = urllib.request.Request('https://openrouter.ai/api/v1/chat/completions',
+            data=body, headers={'Authorization': f'Bearer {OPENROUTER_KEY}', 'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            result = json.loads(r.read())
+        return result['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        print(f"  AI error: {e}")
+        return None
+
+
+# =============================================
+# 1. TOP 3 LEADERBOARD (Memes + SuperRare)
+# =============================================
+def build_top3(wave_id, wave_name, category):
+    print(f"Building top 3: {wave_name}...")
     all_ranked = []
     sn = 999999
-    for _ in range(pages):
+    for _ in range(30):
         data = fetch_json(f'https://api.6529.io/api/drops?wave_id={wave_id}&drop_type=PARTICIPATION&limit=20&serial_no_less_than={sn}')
-        if not data:
-            break
+        if not data: break
         for d in data:
             if d.get('rank') is not None:
                 media = d['parts'][0].get('media', []) if d.get('parts') else []
                 all_ranked.append({
-                    'rank': d['rank'],
-                    'title': d.get('title') or (d['parts'][0].get('content', '')[:40] if d.get('parts') else 'Untitled'),
-                    'author': d['author']['handle'],
-                    'tdh': d.get('realtime_rating', 0),
+                    'rank': d['rank'], 'title': d.get('title') or 'Untitled',
+                    'author': d['author']['handle'], 'tdh': d.get('realtime_rating', 0),
                     'voters': d.get('raters_count', 0),
-                    'img': media[0]['url'] if media else None,
-                    'drop_id': d['id'],
-                    'wave_id': wave_id
+                    'img': media[0]['url'] if media else None
                 })
         sn = data[-1]['serial_no']
-        if len(all_ranked) >= 10:
-            break
+        if len(all_ranked) >= 10: break
 
-    # Deduplicate and sort by rank
     all_ranked.sort(key=lambda x: x['rank'])
-    seen = set()
-    unique = []
+    seen, top3 = set(), []
     for d in all_ranked:
-        key = f"{d['rank']}-{d['author']}"
-        if key not in seen:
-            seen.add(key)
-            unique.append(d)
-    return unique
+        if d['author'] not in seen:
+            seen.add(d['author'])
+            top3.append(d)
+        if len(top3) >= 3: break
 
-
-def fetch_opensea_stats(slug):
-    return fetch_json(f'https://api.opensea.io/api/v2/collections/{slug}/stats', {'X-API-KEY': OPENSEA_KEY})
-
-
-def fetch_opensea_sales(slug, limit=30):
-    return fetch_json(f'https://api.opensea.io/api/v2/events/collection/{slug}?event_type=sale&limit={limit}', {'X-API-KEY': OPENSEA_KEY})
-
-
-def format_tdh(tdh):
-    if tdh >= 1_000_000:
-        return f"{tdh / 1_000_000:.1f}M"
-    if tdh >= 1_000:
-        return f"{tdh / 1_000:.0f}K"
-    return str(tdh)
-
-
-# =============================================
-# FIXED NEWS: Always generated (no AI needed)
-# =============================================
-
-def build_market_recap(collections):
-    """FIXED: Market recap + detailed sales card for Memes."""
-    print("Building market recap...")
-    news = []
-    all_whales = []
-    ticker_data = []  # For the ticker strip
-
-    for c in collections:
-        stats = fetch_opensea_stats(c['slug'])
-        if not stats:
-            continue
-
-        floor = stats['total'].get('floor_price', 0)
-        floor_sym = stats['total'].get('floor_price_symbol', 'ETH')
-        total_volume = stats['total'].get('volume', 0)
-        total_sales = stats['total'].get('sales', 0)
-        holders = stats['total'].get('num_owners', 0)
-        vol_24h = stats['intervals'][0].get('volume', 0) if stats.get('intervals') else 0
-        sales_24h = stats['intervals'][0].get('sales', 0) if stats.get('intervals') else 0
-
-        # Ticker data
-        ticker_data.append({'name': c['name'], 'floor': floor, 'floor_sym': floor_sym,
-                           'vol_24h': vol_24h, 'sales_24h': sales_24h,
-                           'total_volume': total_volume, 'total_sales': total_sales})
-
-        # Detailed sales analysis (Memes only for now)
-        if c['slug'] == 'thememes6529':
-            sales_data = fetch_opensea_sales(c['slug'], 50)
-            if sales_data and 'asset_events' in sales_data:
-                buyers = {}
-                highest_sale = {'name': '', 'price': 0}
-                direct_sales = 0
-                accept_offers = 0
-                sale_details = []
-
-                for e in sales_data['asset_events']:
-                    price = int(e['payment']['quantity']) / 1e18
-                    buyer = e['buyer']
-                    seller = e['seller']
-                    name = e['nft']['name']
-
-                    if price > highest_sale['price']:
-                        highest_sale = {'name': name, 'price': price}
-
-                    # Detect direct sale vs accept offer (heuristic: order_hash presence)
-                    if e.get('order_hash'):
-                        direct_sales += 1
-                    else:
-                        accept_offers += 1
-
-                    sale_details.append(f'"{name}" {price:.3f} ETH')
-
-                    if buyer not in buyers:
-                        buyers[buyer] = {'count': 0, 'spent': 0, 'last': ''}
-                    buyers[buyer]['count'] += 1
-                    buyers[buyer]['spent'] += price
-                    if not buyers[buyer]['last']:
-                        buyers[buyer]['last'] = name
-
-                # Sales breaking news card
-                summary = f'{sales_24h} sales in 24h for {vol_24h:.2f} ETH total volume.'
-                if highest_sale['price'] > 0:
-                    summary += f' Highest: "{highest_sale["name"]}" at {highest_sale["price"]:.3f} ETH.'
-                summary += f' Listings: {direct_sales} | Offers accepted: {accept_offers}.'
-
-                news.append({
-                    'category': 'SALES 24H',
-                    'headline': f'{sales_24h} Meme Sales Today - {vol_24h:.2f} ETH Volume',
-                    'summary': summary,
-                    'source': 'OpenSea',
-                    'link': 'https://opensea.io/collection/thememes6529',
-                    'image': None,
-                    'dataBoxes': [
-                        {'label': 'Total Sales', 'value': str(sales_24h), 'sub': '24h'},
-                        {'label': 'Volume', 'value': f'{vol_24h:.2f}', 'sub': 'ETH'},
-                        {'label': 'Top Sale', 'value': f'{highest_sale["price"]:.3f}', 'sub': highest_sale['name'][:20]},
-                        {'label': 'Floor', 'value': str(floor), 'sub': floor_sym}
-                    ]
-                })
-
-                # Whales
-                for addr, info in buyers.items():
-                    if info['count'] >= 3:
-                        short = addr[:6] + '...' + addr[-4:]
-                        all_whales.append({
-                            'address': short, 'count': info['count'],
-                            'spent': info['spent'], 'last': info['last'],
-                            'collection': c['name']
-                        })
-
-    # Whale alerts
-    all_whales.sort(key=lambda x: x['count'], reverse=True)
-    for whale in all_whales[:2]:
-        news.append({
-            'category': 'WHALE ALERT',
-            'headline': f"Whale {whale['address']} Buys {whale['count']} {whale['collection']}",
-            'summary': f"Total spent: {whale['spent']:.3f} ETH. Last purchase: \"{whale['last']}\".",
-            'source': 'OpenSea',
-            'link': 'https://opensea.io/collection/thememes6529',
-            'image': None, 'dataBoxes': None
-        })
-
-    return news, ticker_data
-
-
-def build_top3_leaderboard(wave_id, wave_name, category):
-    """FIXED: Top 3 leaderboard for a voting wave."""
-    print(f"Building top 3: {wave_name}...")
-    subs = fetch_ranked_submissions(wave_id, pages=30)
-    top3 = subs[:3]
-
-    if not top3:
-        return []
-
-    summary_parts = []
-    data_boxes = []
-    for s in top3:
-        summary_parts.append(f"#{s['rank']} \"{s['title']}\" by {s['author']} ({format_tdh(s['tdh'])} TDH, {s['voters']} voters)")
-        data_boxes.append({
-            'label': f"#{s['rank']} {s['author']}",
-            'value': format_tdh(s['tdh']),
-            'sub': f"TDH ({s['voters']} votes)"
-        })
-
-    # Use #1's image if available
-    image = None
-    if top3[0].get('img'):
-        image = {'url': top3[0]['img'], 'label': f"#{top3[0]['rank']} {top3[0]['title']} - {top3[0]['author']}"}
-
+    if not top3: return []
+    image = {'url': top3[0]['img'], 'label': f"#{top3[0]['rank']} {top3[0]['title']}"} if top3[0].get('img') else None
     return [{
         'category': category,
         'headline': f"#{top3[0]['rank']} {top3[0]['author']} Leads with {format_tdh(top3[0]['tdh'])} TDH",
-        'summary': ' | '.join(summary_parts),
+        'summary': ' | '.join([f"#{s['rank']} \"{s['title']}\" by {s['author']} ({format_tdh(s['tdh'])} TDH, {s['voters']} voters)" for s in top3]),
         'source': wave_name,
         'link': f'https://6529.io/waves/{wave_id}',
         'image': image,
-        'dataBoxes': data_boxes[:4]
+        'dataBoxes': [{'label': f"#{s['rank']} {s['author']}", 'value': format_tdh(s['tdh']), 'sub': f"TDH ({s['voters']} votes)"} for s in top3]
     }]
 
 
 # =============================================
-# VARIABLE NEWS: AI-generated from wave activity
+# 2. MINTING STATUS
 # =============================================
+def build_minting_status():
+    print("Checking minting status...")
+    now = datetime.now(timezone.utc)
+    mint_days = {0: 'Monday', 2: 'Wednesday', 4: 'Friday'}
 
-    # Waves to EXCLUDE from chat news (only leaderboard from these)
-LEADERBOARD_ONLY_WAVES = {MEMES_WAVE_ID, SR_WAVE_ID}
+    # Find next mint day
+    for i in range(7):
+        d = now + timedelta(days=i)
+        if d.weekday() in mint_days:
+            mint_date = d.replace(hour=0, minute=0, second=0, microsecond=0)
+            checkpoint = mint_date - timedelta(days=2)
+            checkpoint = checkpoint.replace(hour=17, minute=0, second=0, microsecond=0)
 
-def gather_significant_wave_data(waves):
-    """Only gather waves with significant activity (>= MIN_MSGS_6H in 6 hours).
-    Excludes Main Stage and SuperRare (leaderboard only)."""
-    wave_data = []
-    six_hours_ago = (datetime.now(timezone.utc) - timedelta(hours=6)).timestamp() * 1000
+            if d.date() == now.date():
+                headline = f"MINTING TODAY - {mint_days[d.weekday()]}"
+                summary = "A new Meme Card is being minted today! The winner was selected at the checkpoint 2 days ago."
+                cat = 'MINTING TODAY'
+            else:
+                days_left = (mint_date - now).days
+                headline = f"Next Mint: {mint_days[d.weekday()]} ({d.strftime('%b %d')})"
+                summary = f"Next Meme Card mint in {days_left} day{'s' if days_left != 1 else ''}. Checkpoint: {checkpoint.strftime('%a %b %d at %H:%M UTC')}."
+                cat = 'MINTING SOON'
 
-    for w in waves:
-        # Skip leaderboard-only waves
-        if w['id'] in LEADERBOARD_ONLY_WAVES:
-            print(f"  Skipping {w['name']}: leaderboard only (no chat news)")
-            continue
-        drops = fetch_6529_drops(w['id'], 20)
-        if not drops:
-            continue
-
-        # Count messages in last 6 hours
-        recent = [d for d in drops if d['created_at'] > six_hours_ago]
-
-        if len(recent) < MIN_MSGS_6H:
-            print(f"  Skipping {w['name']}: only {len(recent)} msgs in 6h (min {MIN_MSGS_6H})")
-            continue
-
-        messages = []
-        for d in recent[:10]:
-            parts = d.get('parts', [])
-            content = (parts[0].get('content') or '')[:200] if parts else ''
-            author = d.get('author', {}).get('handle', '?')
-            if content:
-                messages.append(f"{author}: {content}")
-
-        # Unique participants
-        authors = list(set(d.get('author', {}).get('handle', '?') for d in recent))
-
-        wave_data.append({
-            'name': w['name'],
-            'type': w.get('type', 'chat'),
-            'msgs_6h': len(recent),
-            'participants': authors[:10],
-            'sample_messages': messages[:5],
-            'wave_id': w['id']
-        })
-
-    return wave_data
-
-
-def generate_additional_news_ai(wave_data, max_news=7):
-    """Use AI to generate additional news from wave activity."""
-    if not OPENROUTER_KEY or not wave_data:
-        return generate_additional_fallback(wave_data)
-
-    prompt = f"""You are a news editor for 6529 NEWS, a daily broadcast covering the 6529 NFT ecosystem.
-Today is {datetime.now(timezone.utc).strftime('%B %d, %Y')}.
-
-Below is significant wave/chat activity from the last 6 hours.
-Generate {min(max_news, len(wave_data) * 2)} news items highlighting the most interesting discussions, quotes, trends, and community moments.
-
-RULES:
-- Only include genuinely interesting content (notable quotes, debates, announcements, milestones)
-- Do NOT include simple "gm" or greeting messages as news
-- Attribute quotes to their authors
-- Be specific with names and details
-- Each news item must be distinct (no duplicates)
-
-=== WAVE ACTIVITY (last 6 hours) ===
-{json.dumps(wave_data, indent=2)[:4000]}
-
-Return ONLY a valid JSON array. No markdown, no explanation.
-[
-  {{
-    "category": "COMMUNITY|CULTURE|BREAKING",
-    "headline": "Short punchy headline",
-    "summary": "2-3 sentences with quotes and specific details",
-    "source": "Wave name",
-    "link": "https://6529.io/waves/WAVE_ID",
-    "image": null,
-    "dataBoxes": null
-  }}
-]"""
-
-    body = json.dumps({
-        'model': AI_MODEL,
-        'messages': [{'role': 'user', 'content': prompt}],
-        'max_tokens': 2500,
-        'temperature': 0.7
-    }).encode()
-
-    req = urllib.request.Request(
-        'https://openrouter.ai/api/v1/chat/completions',
-        data=body,
-        headers={
-            'Authorization': f'Bearer {OPENROUTER_KEY}',
-            'Content-Type': 'application/json'
-        }
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            result = json.loads(r.read())
-
-        content = result['choices'][0]['message']['content']
-
-        if '```json' in content:
-            content = content.split('```json')[1].split('```')[0]
-        elif '```' in content:
-            content = content.split('```')[1].split('```')[0]
-
-        news = json.loads(content.strip())
-        print(f"AI generated {len(news)} additional news items")
-        return news[:max_news]
-
-    except Exception as e:
-        print(f"AI generation failed: {e}")
-        return generate_additional_fallback(wave_data)
-
-
-def generate_additional_fallback(wave_data):
-    """Fallback: generate news from wave data without AI."""
-    news = []
-    for w in wave_data:
-        if w['msgs_6h'] >= 10:
-            activity = 'buzzing'
-        elif w['msgs_6h'] >= 5:
-            activity = 'active'
-        else:
-            continue
-
-        # Pick a non-trivial message
-        best_msg = ''
-        for msg in w['sample_messages']:
-            # Skip simple greetings
-            lower = msg.lower()
-            if any(g in lower for g in ['gm', 'good morning', 'hello', 'hi ']):
-                continue
-            best_msg = msg
-            break
-
-        if not best_msg and w['sample_messages']:
-            best_msg = w['sample_messages'][0]
-
-        summary = f"{w['msgs_6h']} messages in the last 6 hours with {len(w['participants'])} participants."
-        if best_msg:
-            summary += f' Latest: {best_msg[:150]}'
-
-        news.append({
-            'category': 'COMMUNITY',
-            'headline': f"{w['name']} is {activity}: {w['msgs_6h']} messages, {len(w['participants'])} participants",
-            'summary': summary,
-            'source': w['name'],
-            'link': f"https://6529.io/waves/{w['wave_id']}",
-            'image': None,
-            'dataBoxes': None
-        })
-
-    return news[:5]
+            return [{
+                'category': cat,
+                'headline': headline,
+                'summary': summary,
+                'source': 'The Memes', 'link': 'https://6529.io/the-memes',
+                'image': None, 'dataBoxes': None
+            }]
+    return []
 
 
 # =============================================
-# NEW SUBMISSIONS
+# 3. SALES RECAP (24h)
 # =============================================
+def build_sales_recap():
+    print("Building sales recap...")
+    stats = fetch_json(f'https://api.opensea.io/api/v2/collections/thememes6529/stats', {'X-API-KEY': OPENSEA_KEY})
+    sales_data = fetch_json(f'https://api.opensea.io/api/v2/events/collection/thememes6529?event_type=sale&limit=50', {'X-API-KEY': OPENSEA_KEY})
 
-def build_new_submissions():
-    """Fetch PARTICIPATION drops from Main Stage created after midnight UTC today."""
-    print("Checking new submissions today...")
-    midnight_ms = int(datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
+    if not stats: return [], [], []
 
-    # Fetch recent participation drops
-    data = fetch_json(f'https://api.6529.io/api/drops?wave_id={MEMES_WAVE_ID}&drop_type=PARTICIPATION&limit=20')
-    if not data:
-        return []
+    floor = stats['total'].get('floor_price', 0)
+    floor_sym = stats['total'].get('floor_price_symbol', 'ETH')
+    vol_24h = stats['intervals'][0].get('volume', 0) if stats.get('intervals') else 0
+    sales_24h = stats['intervals'][0].get('sales', 0) if stats.get('intervals') else 0
 
-    today_subs = []
-    for d in data:
-        if d['created_at'] >= midnight_ms:
-            media = d['parts'][0].get('media', []) if d.get('parts') else []
-            title = d.get('title') or (d['parts'][0].get('content', '')[:40] if d.get('parts') else 'Untitled')
-            author = d.get('author', {}).get('handle', '?')
-            img = media[0]['url'] if media else None
-            today_subs.append({'title': title, 'author': author, 'img': img})
+    highest = {'name': '', 'price': 0}
+    high_sales = []  # Sales > 0.3 ETH
+    sweeps = {}  # card_id -> count (detect sweeps)
+    headline_extras = []
 
-    if not today_subs:
-        print("  No new submissions today")
-        return []
+    if sales_data and 'asset_events' in sales_data:
+        for e in sales_data['asset_events']:
+            price = int(e['payment']['quantity']) / 1e18
+            name = e['nft']['name']
+            card_id = e['nft']['identifier']
 
-    count = len(today_subs)
-    print(f"  Found {count} new submission(s) today")
+            if price > highest['price']:
+                highest = {'name': name, 'price': price}
+            if price >= 0.3:
+                high_sales.append(f'"{name}" {price:.3f} ETH')
+            sweeps[card_id] = sweeps.get(card_id, 0) + 1
 
-    # Build summary
-    if count == 1:
-        s = today_subs[0]
-        summary = f'New submission: "{s["title"]}" by {s["author"]}.'
-        image = {'url': s['img'], 'label': f'{s["title"]} - {s["author"]}'} if s['img'] else None
-    else:
-        parts = [f'"{s["title"]}" by {s["author"]}' for s in today_subs[:4]]
-        summary = f'{count} new submissions today: ' + ' | '.join(parts)
-        if count > 4:
-            summary += f' and {count - 4} more.'
-        # Use first submission's image
-        image = {'url': today_subs[0]['img'], 'label': f'{count} new submissions'} if today_subs[0].get('img') else None
+    # Detect sweeps (5+ sales of same card)
+    sweep_cards = [(cid, cnt) for cid, cnt in sweeps.items() if cnt >= 5]
 
-    headline = f'{count} New Submission{"s" if count != 1 else ""} on Main Stage Today'
+    summary = f'{sales_24h} sales in 24h for {vol_24h:.2f} ETH.'
+    if highest['price'] > 0:
+        summary += f' Highest: "{highest["name"]}" at {highest["price"]:.3f} ETH.'
+    if sweep_cards:
+        summary += f' Sweep detected: {len(sweep_cards)} card(s) with 5+ sales.'
 
-    return [{
-        'category': 'NEW SUBMISSIONS',
-        'headline': headline,
+    news = [{
+        'category': 'SALES RECAP',
+        'headline': f'{sales_24h} Sales Today - {vol_24h:.2f} ETH Volume',
         'summary': summary,
-        'source': 'The Memes - Main Stage',
-        'link': f'https://6529.io/waves/{MEMES_WAVE_ID}',
-        'image': image,
-        'dataBoxes': None
+        'source': 'OpenSea', 'link': 'https://opensea.io/collection/thememes6529',
+        'image': None,
+        'dataBoxes': [
+            {'label': 'Sales 24h', 'value': str(sales_24h), 'sub': ''},
+            {'label': 'Volume 24h', 'value': f'{vol_24h:.2f}', 'sub': 'ETH'},
+            {'label': 'Top Sale', 'value': f'{highest["price"]:.3f}', 'sub': highest['name'][:20] if highest['name'] else ''},
+            {'label': 'Floor', 'value': str(floor), 'sub': floor_sym}
+        ]
     }]
 
+    # Build headline extras for the NEWS bar
+    if high_sales:
+        headline_extras.append(f"HIGH SALE: {high_sales[0]}")
+    for cid, cnt in sweep_cards[:1]:
+        headline_extras.append(f"SWEEP ALERT: CARD #{cid} - {cnt} SALES IN 24H")
+
+    # Pebbles market for headline
+    pebbles = fetch_json('https://api.opensea.io/api/v2/collections/pebbles-by-zeblocks/stats', {'X-API-KEY': OPENSEA_KEY})
+    if pebbles:
+        p_floor = pebbles['total'].get('floor_price', 0)
+        p_vol = pebbles['intervals'][0].get('volume', 0) if pebbles.get('intervals') else 0
+        headline_extras.append(f"PEBBLES: FLOOR {p_floor} ETH | 24H VOL {p_vol:.2f} ETH")
+
+    ticker_data = [{
+        'name': 'Memes', 'floor': floor, 'floor_sym': floor_sym,
+        'vol_24h': vol_24h, 'sales_24h': sales_24h
+    }]
+
+    return news, headline_extras, ticker_data
+
 
 # =============================================
-# DIVE BAR SUMMARY
+# 4. PUNK6529 (conditional: wrote in last 24h)
 # =============================================
-
-def build_divebar_summary():
-    """Fetch recent activity from maybe's dive bar and create a summary card."""
-    print("Checking maybe's dive bar...")
-    drops = fetch_6529_drops(DIVEBAR_WAVE_ID, 20)
-    if not drops:
-        print("  Dive bar empty or inaccessible")
-        return []
+def build_punk6529():
+    print("Checking punk6529...")
+    drops = fetch_json(f'https://api.6529.io/api/drops?author={PUNK6529_HANDLE}&limit=20')
+    if not drops: return [], []
 
     now_ms = datetime.now(timezone.utc).timestamp() * 1000
-    twenty_four_h_ago = now_ms - 24 * 3600 * 1000
-    recent = [d for d in drops if d['created_at'] > twenty_four_h_ago]
+    twenty_four_h = now_ms - 24 * 3600 * 1000
+    recent = [d for d in drops if d['created_at'] > twenty_four_h]
+
+    headline_extra = []
+
+    if not recent:
+        # Last seen
+        last = drops[0]
+        last_dt = datetime.fromtimestamp(last['created_at']/1000, tz=timezone.utc)
+        wave_name = last.get('wave', {}).get('name', 'unknown')
+        headline_extra.append(f"6529 LAST SEEN: {wave_name} ({last_dt.strftime('%b %d %H:%M UTC')})")
+        return [], headline_extra
 
     if len(recent) < 5:
         print(f"  Only {len(recent)} msgs in 24h (need 5+)")
-        return []
+        headline_extra.append(f"PUNK6529: {len(recent)} MESSAGES TODAY")
+        return [], headline_extra
 
-    # Gather messages and authors
+    # Get messages for AI summary
     messages = []
-    authors = set()
+    waves_active = set()
     for d in recent[:15]:
-        parts = d.get('parts', [])
-        content = (parts[0].get('content') or '')[:200] if parts else ''
-        author = d.get('author', {}).get('handle', '?')
-        if content and len(content) > 15:
-            messages.append(f'{author}: "{content}"')
-            authors.add(author)
+        content = (d['parts'][0].get('content') or '')[:200] if d.get('parts') else ''
+        waves_active.add(d.get('wave', {}).get('name', '?'))
+        if content and len(content) > 20:
+            messages.append(content)
 
-    # Try AI summarization
-    if OPENROUTER_KEY and messages:
-        try:
-            prompt = f"""Summarize these chat messages from "maybe's dive bar" (a 6529 NFT community chat) in 2-3 sentences. Focus on key topics discussed. Be concise and factual.
+    summary = ai_summarize(
+        f"Summarize what punk6529 (a key figure in the 6529 NFT community) talked about in these messages. 2-3 sentences, factual:\n\n" +
+        '\n'.join([f'- {m}' for m in messages[:8]])
+    )
+    if not summary:
+        best = [m for m in messages if len(m) > 40][:2]
+        summary = f'punk6529 posted {len(recent)} messages in {", ".join(waves_active)}. ' + ' | '.join([f'"{q[:80]}"' for q in best])
 
-Messages:
-{chr(10).join(messages[:8])}"""
-
-            body = json.dumps({
-                'model': AI_MODEL,
-                'messages': [{'role': 'user', 'content': prompt}],
-                'max_tokens': 200,
-                'temperature': 0.5
-            }).encode()
-
-            req = urllib.request.Request(
-                'https://openrouter.ai/api/v1/chat/completions',
-                data=body,
-                headers={
-                    'Authorization': f'Bearer {OPENROUTER_KEY}',
-                    'Content-Type': 'application/json'
-                }
-            )
-
-            with urllib.request.urlopen(req, timeout=30) as r:
-                result = json.loads(r.read())
-            summary = result['choices'][0]['message']['content'].strip()
-            print("  AI summary generated")
-        except Exception as e:
-            print(f"  AI summary failed: {e}, using template")
-            summary = f"{len(recent)} messages in the last 24h from {len(authors)} participants. " + ' | '.join(messages[:3])
-    else:
-        summary = f"{len(recent)} messages in the last 24h from {len(authors)} participants. " + ' | '.join(messages[:3])
-
-    print(f"  Dive bar active: {len(recent)} msgs, {len(authors)} participants")
+    print(f"  Active: {len(recent)} msgs")
     return [{
-        'category': 'DIVE BAR',
-        'headline': f"Dive Bar Buzz: {len(recent)} Messages, {len(authors)} Voices",
+        'category': '6529 TALKS',
+        'headline': f'punk6529: {len(recent)} Messages Today',
         'summary': summary,
-        'source': "maybe's dive bar",
-        'link': f'https://6529.io/waves/{DIVEBAR_WAVE_ID}',
-        'image': None,
+        'source': list(waves_active)[0] if waves_active else 'Network',
+        'link': 'https://6529.io/punk6529',
+        'image': {'url': PUNK6529_PFP, 'label': 'punk6529'},
         'dataBoxes': None
+    }], []
+
+
+# =============================================
+# 5. MAYBE'S DIVE BAR HOT TOPIC (100+ msgs in 30 min window)
+# =============================================
+def build_divebar_hot():
+    print("Checking dive bar hot topics...")
+    drops = fetch_json(f'https://api.6529.io/api/drops?wave_id={DIVEBAR_WAVE_ID}&limit=20')
+    if not drops: return [], []
+
+    now_ms = datetime.now(timezone.utc).timestamp() * 1000
+    twenty_four_h = now_ms - 24 * 3600 * 1000
+    recent_24h = [d for d in drops if d['created_at'] > twenty_four_h]
+
+    # Check if there's a burst (many messages in short time)
+    # With only 20 drops we check if all 20 happened in <30 min
+    headline_extras = []
+
+    if len(recent_24h) >= 15:
+        times = [d['created_at'] for d in recent_24h]
+        span_min = (times[0] - times[-1]) / 60000
+        msgs_per_hour = len(recent_24h) / (span_min / 60) if span_min > 0 else 0
+
+        if msgs_per_hour >= 40:  # Very active
+            messages = []
+            authors = set()
+            for d in recent_24h[:15]:
+                content = (d['parts'][0].get('content') or '')[:150] if d.get('parts') else ''
+                author = d.get('author', {}).get('handle', '?')
+                if content and len(content) > 15:
+                    messages.append(f'{author}: {content}')
+                    authors.add(author)
+
+            summary = ai_summarize(
+                f"Summarize the key topics from these chat messages in maybe's dive bar (6529 NFT community). 2-3 sentences:\n\n" +
+                '\n'.join(messages[:10])
+            )
+            if not summary:
+                summary = f"{len(recent_24h)} messages, {len(authors)} participants. " + ' | '.join(messages[:3])
+
+            # Headline extra about dive bar
+            headline_extras.append(f"DIVE BAR: {int(msgs_per_hour)} MSG/H - {len(authors)} PEOPLE TALKING")
+
+            return [{
+                'category': 'DIVE BAR',
+                'headline': f"Hot Topic: {int(msgs_per_hour)} Messages/Hour in the Dive Bar",
+                'summary': summary,
+                'source': "maybe's dive bar",
+                'link': f'https://6529.io/waves/{DIVEBAR_WAVE_ID}',
+                'image': None, 'dataBoxes': None
+            }], headline_extras
+        else:
+            # Not hot enough for a card, but add to headline
+            headline_extras.append(f"DIVE BAR: {int(msgs_per_hour)} MSG/H TODAY")
+
+    return [], headline_extras
+
+
+# =============================================
+# 6. NEW SUBMISSIONS (24h, best by TDH)
+# =============================================
+def build_new_submissions():
+    print("Checking new submissions...")
+    midnight_ms = int(datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
+
+    data = fetch_json(f'https://api.6529.io/api/drops?wave_id={MEMES_WAVE_ID}&drop_type=PARTICIPATION&limit=20')
+    if not data: return []
+
+    today = []
+    for d in data:
+        if d['created_at'] >= midnight_ms:
+            media = d['parts'][0].get('media', []) if d.get('parts') else []
+            today.append({
+                'title': d.get('title') or 'Untitled',
+                'author': d['author']['handle'],
+                'tdh': d.get('realtime_rating', 0),
+                'img': media[0]['url'] if media else None
+            })
+
+    if not today: return []
+
+    # Sort by TDH, show the top one
+    today.sort(key=lambda x: x['tdh'], reverse=True)
+    best = today[0]
+    count = len(today)
+
+    summary = f'{count} new submission{"s" if count > 1 else ""} today.'
+    if count > 1:
+        others = ', '.join([f'{s["author"]}' for s in today[1:4]])
+        summary += f' Also: {others}.'
+    summary += f' Top: "{best["title"]}" by {best["author"]} ({format_tdh(best["tdh"])} TDH).'
+
+    image = {'url': best['img'], 'label': f'{best["title"]} - {best["author"]}'} if best.get('img') else None
+
+    print(f"  {count} submissions, best: {best['author']} ({format_tdh(best['tdh'])})")
+    return [{
+        'category': 'NEW SUBMISSIONS',
+        'headline': f'{count} New Submission{"s" if count > 1 else ""} Today',
+        'summary': summary,
+        'source': 'Main Stage',
+        'link': f'https://6529.io/waves/{MEMES_WAVE_ID}',
+        'image': image, 'dataBoxes': None
     }]
 
 
 # =============================================
 # OUTPUT
 # =============================================
-
-def build_output(fixed_news, variable_news, ticker_data, wave_activity=None):
-    """Combine fixed + variable news, build ticker from market data."""
-    all_news = fixed_news + variable_news
-    all_news = all_news[:13]
-
+def build_output(news, ticker_data, headline_extras):
     ticker = []
     for m in ticker_data:
-        ticker.append({'label': f"{m['name']} Floor", 'value': f"{m.get('floor', '?')} {m.get('floor_sym', 'ETH')}"})
+        ticker.append({'label': f"{m['name']} Floor", 'value': f"{m['floor']} {m['floor_sym']}"})
         if m.get('vol_24h', 0) > 0:
-            ticker.append({'label': f"{m['name']} 24h Vol", 'value': f"{m['vol_24h']:.2f} ETH"})
-        if m.get('total_volume', 0) > 0:
-            ticker.append({'label': f"{m['name']} Total Vol", 'value': f"{m['total_volume']:.0f} ETH"})
-        if m.get('total_sales', 0) > 0:
-            ticker.append({'label': f"{m['name']} Total Sales", 'value': f"{m['total_sales']:,}"})
-
-    # Add top sale ticker item from sales news
-    for n in all_news:
-        if n.get('category') == 'SALES 24H' and n.get('dataBoxes'):
-            for db in n['dataBoxes']:
-                if db.get('label') == 'Top Sale':
-                    ticker.append({'label': 'Top Sale', 'value': f"{db['value']} ETH"})
-                    break
-            break
-
-    # Add wave activity indicators
-    if wave_activity:
-        total_msgs = sum(w.get('msgs_6h', 0) for w in wave_activity)
-        total_participants = len(set(p for w in wave_activity for p in w.get('participants', [])))
-        if total_msgs > 0:
-            ticker.append({'label': 'Wave Activity (6h)', 'value': f"{total_msgs} msgs"})
-        if total_participants > 0:
-            ticker.append({'label': 'Active Users', 'value': str(total_participants)})
+            ticker.append({'label': f"24h Volume", 'value': f"{m['vol_24h']:.2f} ETH"})
+        if m.get('sales_24h', 0) > 0:
+            ticker.append({'label': f"24h Sales", 'value': f"{m['sales_24h']}"})
 
     return {
         'generated_at': datetime.now(timezone.utc).isoformat(),
         'model': AI_MODEL,
-        'news': all_news,
-        'ticker': ticker
+        'news': news[:10],
+        'ticker': ticker,
+        'headline_extras': headline_extras[:8]
     }
 
 
 def update_gist(output):
-    if not GITHUB_TOKEN or not GIST_ID:
-        return
-
-    body = json.dumps({
-        'files': {'news-latest.json': {'content': json.dumps(output, indent=2)}}
-    }).encode()
-
-    req = urllib.request.Request(
-        f'https://api.github.com/gists/{GIST_ID}',
-        data=body, method='PATCH',
-        headers={'Authorization': f'Bearer {GITHUB_TOKEN}', 'Content-Type': 'application/json'}
-    )
-
+    if not GITHUB_TOKEN or not GIST_ID: return
+    body = json.dumps({'files': {'news-latest.json': {'content': json.dumps(output, indent=2)}}}).encode()
+    req = urllib.request.Request(f'https://api.github.com/gists/{GIST_ID}', data=body, method='PATCH',
+        headers={'Authorization': f'Bearer {GITHUB_TOKEN}', 'Content-Type': 'application/json'})
     try:
-        with urllib.request.urlopen(req) as r:
-            print(f"Gist updated")
-    except Exception as e:
-        print(f"Gist update failed: {e}")
-
-
-# =============================================
-# PUNK6529 TRACKING
-# =============================================
-
-def build_punk6529_news():
-    """Track punk6529's activity. If 5+ msgs in 6h: '6529 Talks about'. Otherwise: last seen."""
-    print("Tracking punk6529...")
-    news = []
-
-    # Get punk6529's recent drops across all waves
-    drops = fetch_json(f'https://api.6529.io/api/drops?author={PUNK6529_HANDLE}&limit=20')
-    if not drops:
-        return news
-
-    now_ms = datetime.now(timezone.utc).timestamp() * 1000
-    six_h_ago = now_ms - 6 * 3600 * 1000
-    twenty_four_h_ago = now_ms - 24 * 3600 * 1000
-
-    recent_6h = [d for d in drops if d['created_at'] > six_h_ago]
-    recent_24h = [d for d in drops if d['created_at'] > twenty_four_h_ago]
-
-    if len(recent_6h) >= PUNK6529_MIN_MSGS:
-        # 6529 is actively talking - summarize what about
-        messages = []
-        topics = set()
-        for d in recent_6h[:10]:
-            parts = d.get('parts', [])
-            content = (parts[0].get('content') or '')[:200] if parts else ''
-            wave_name = d.get('wave', {}).get('name', '?')
-            if content:
-                messages.append(content)
-                topics.add(wave_name)
-
-        # Pick best quotes (skip very short ones)
-        best_quotes = [m for m in messages if len(m) > 30][:3]
-        quote_text = ' | '.join([f'"{q[:100]}"' for q in best_quotes])
-
-        news.append({
-            'category': '6529 TALKS',
-            'headline': f'6529 Talks About: {len(recent_6h)} Messages in the Last 6 Hours',
-            'summary': f'punk6529 has been active in {", ".join(topics)}. {quote_text}',
-            'source': list(topics)[0] if topics else 'Network',
-            'link': 'https://6529.io/punk6529',
-            'image': {'url': PUNK6529_PFP, 'label': 'punk6529'},
-            'dataBoxes': None
-        })
-        print(f"  6529 active: {len(recent_6h)} msgs in 6h")
-
-    elif recent_24h:
-        # Active in last 24h but not heavily - skip (not newsworthy)
-        print(f"  6529 mildly active: {len(recent_24h)} msgs in 24h (below threshold)")
-
-    else:
-        # Not active in 24h - show last seen
-        if drops:
-            last = drops[0]
-            last_ts = last['created_at'] / 1000
-            last_dt = datetime.fromtimestamp(last_ts, tz=timezone.utc)
-            last_wave = last.get('wave', {}).get('name', 'unknown')
-            time_str = last_dt.strftime('%b %d, %H:%M UTC')
-
-            news.append({
-                'category': '6529 STATUS',
-                'headline': f'6529 Last Seen in {last_wave}',
-                'summary': f'punk6529 was last active on {time_str} in "{last_wave}". No messages in the last 24 hours.',
-                'source': last_wave,
-                'link': 'https://6529.io/punk6529',
-                'image': {'url': PUNK6529_PFP, 'label': 'punk6529 - last seen'},
-                'dataBoxes': None
-            })
-            print(f"  6529 inactive: last seen {time_str}")
-
-    return news
-
-
-def build_tdh_millionaires_news():
-    """TDH Millionaires wave - only if 10+ msgs in 6h."""
-    print("Checking TDH Millionaires wave...")
-    drops = fetch_6529_drops(TDH_MILLIONAIRES_WAVE_ID, 20)
-    if not drops:
-        print("  Wave restricted or empty")
-        return []
-
-    now_ms = datetime.now(timezone.utc).timestamp() * 1000
-    six_h_ago = now_ms - 6 * 3600 * 1000
-    recent = [d for d in drops if d['created_at'] > six_h_ago]
-
-    if len(recent) < 10:
-        print(f"  Only {len(recent)} msgs in 6h (need 10+)")
-        return []
-
-    # Gather discussion topics
-    messages = []
-    authors = set()
-    for d in recent[:15]:
-        parts = d.get('parts', [])
-        content = (parts[0].get('content') or '')[:150] if parts else ''
-        author = d.get('author', {}).get('handle', '?')
-        if content and len(content) > 20:
-            messages.append(f'{author}: "{content}"')
-            authors.add(author)
-
-    summary = f'{len(recent)} messages in the last 6 hours from {len(authors)} TDH millionaires. ' + ' | '.join(messages[:3])
-
-    print(f"  Active: {len(recent)} msgs, {len(authors)} participants")
-    return [{
-        'category': 'TDH MILLIONAIRES',
-        'headline': f'TDH Millionaires Talk: {len(recent)} Messages, {len(authors)} Participants',
-        'summary': summary,
-        'source': 'Memes Talk - 1M TDH',
-        'link': 'https://6529.io/waves/9cc8118b-0ae0-4b22-8d15-3b8ed6604bac',
-        'image': None,
-        'dataBoxes': None
-    }]
+        with urllib.request.urlopen(req) as r: print("Gist updated")
+    except Exception as e: print(f"Gist error: {e}")
 
 
 # =============================================
 # MAIN
 # =============================================
-
 def main():
     print(f"=== 6529 NEWS Generator ===")
     print(f"Time: {datetime.now(timezone.utc).isoformat()}")
 
-    # Load config
-    if os.path.exists(CONFIG_PATH):
-        with open(CONFIG_PATH) as f:
-            config = json.load(f)
-    else:
-        config = {
-            'waves': [
-                {'id': 'b38288e6-ca9d-45ce-8323-3dc5e094f04e', 'name': "maybe's dive bar", 'type': 'chat'},
-                {'id': 'b6128077-ea78-4dd9-b381-52c4eadb2077', 'name': 'The Memes - Main Stage', 'type': 'votes'},
-                {'id': 'd22e3046-a00e-48b9-b245-a339a44c37cd', 'name': 'SuperRare Chat & Application Boost', 'type': 'votes'},
-            ],
-            'collections': [
-                {'slug': 'thememes6529', 'name': 'The Memes'},
-                {'slug': 'pebbles-by-zeblocks', 'name': 'Pebbles'},
-            ]
-        }
+    all_news = []
+    all_headlines = []
 
-    # ---- FIXED NEWS (always present) ----
-    print("\n--- Fixed: Market Recap + Sales ---")
-    market_news, ticker_data = build_market_recap(config['collections'])
+    # --- FIXED CARDS ---
+    print("\n--- SR Top 3 ---")
+    all_news += build_top3(SR_WAVE_ID, 'SuperRare x 6529', 'SUPERRARE TOP 3')
 
-    print("\n--- Fixed: Top 3 Memes ---")
-    memes_top3 = build_top3_leaderboard(MEMES_WAVE_ID, 'The Memes - Main Stage', 'MAIN STAGE TOP 3')
+    print("\n--- Memes Top 3 ---")
+    all_news += build_top3(MEMES_WAVE_ID, 'The Memes - Main Stage', 'MAIN STAGE TOP 3')
 
-    print("\n--- Fixed: Top 3 SuperRare ---")
-    sr_top3 = build_top3_leaderboard(SR_WAVE_ID, 'SuperRare x 6529', 'SUPERRARE TOP 3')
+    print("\n--- Minting Status ---")
+    all_news += build_minting_status()
 
-    print("\n--- Fixed: punk6529 Status ---")
-    punk6529_news = build_punk6529_news()
+    print("\n--- Sales Recap ---")
+    sales_news, sales_headlines, ticker_data = build_sales_recap()
+    all_news += sales_news
+    all_headlines += sales_headlines
 
-    print("\n--- Fixed: TDH Millionaires ---")
-    tdh_mill_news = build_tdh_millionaires_news()
+    # --- CONDITIONAL CARDS ---
+    print("\n--- punk6529 ---")
+    p6529_news, p6529_headlines = build_punk6529()
+    all_news += p6529_news
+    all_headlines += p6529_headlines
 
-    print("\n--- Fixed: New Submissions ---")
-    new_subs_news = build_new_submissions()
+    print("\n--- Dive Bar ---")
+    bar_news, bar_headlines = build_divebar_hot()
+    all_news += bar_news
+    all_headlines += bar_headlines
 
-    print("\n--- Fixed: Dive Bar Summary ---")
-    divebar_news = build_divebar_summary()
+    print("\n--- New Submissions ---")
+    all_news += build_new_submissions()
 
-    fixed_news = market_news + memes_top3 + sr_top3 + punk6529_news + tdh_mill_news + new_subs_news + divebar_news
+    # --- BUILD OUTPUT ---
+    output = build_output(all_news, ticker_data, all_headlines)
+    print(f"\n--- Total: {len(output['news'])} cards, {len(output['headline_extras'])} headline extras ---")
 
-    # ---- VARIABLE NEWS (AI from chat waves ONLY, not Main Stage/SR) ----
-    print("\n--- Gathering wave activity (min 3 msgs/6h, excluding Main Stage/SR) ---")
-    wave_data = gather_significant_wave_data(config['waves'])
-    print(f"  {len(wave_data)} waves with significant activity")
-
-    print("\n--- Generating additional news via AI ---")
-    max_additional = 10 - len(fixed_news)
-    variable_news = generate_additional_news_ai(wave_data, max_news=max(0, max_additional))
-
-    # ---- BUILD OUTPUT ----
-    output = build_output(fixed_news, variable_news, ticker_data, wave_activity=wave_data)
-    print(f"\n--- Total: {len(output['news'])} news items ({len(fixed_news)} fixed + {len(variable_news)} variable) ---")
-
-    # ---- PUBLISH ----
-    print("\n--- Publishing ---")
+    # --- PUBLISH ---
     update_gist(output)
-
-    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data', 'news-latest.json')
-    with open(output_path, 'w') as f:
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data', 'news-latest.json')
+    with open(out_path, 'w') as f:
         json.dump(output, f, indent=2)
-    print(f"Written to {output_path}")
-
-    print("\nDone!")
+    print(f"Written to {out_path}\nDone!")
 
 
 if __name__ == '__main__':
