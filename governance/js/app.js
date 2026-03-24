@@ -333,6 +333,12 @@ async function handleVote(proposalId, vote) {
   if (btnYes) btnYes.disabled = true;
   if (btnNo) btnNo.disabled = true;
 
+  if (!ensureGitHubToken()) {
+    if (btnYes) btnYes.disabled = false;
+    if (btnNo) btnNo.disabled = false;
+    return;
+  }
+
   if (statusEl) statusEl.innerHTML = '<span class="status-pending">Signing with wallet...</span>';
 
   try {
@@ -430,6 +436,8 @@ async function renderCreateProposal() {
 
     if (!waveId) { showToast('Enter a wave ID', 'error'); return; }
     if (!reason) { showToast('Enter a reason', 'error'); return; }
+
+    if (!ensureGitHubToken()) return;
 
     const statusEl = document.getElementById('proposalStatus');
     const btn = document.getElementById('btnSubmitProposal');
@@ -694,6 +702,41 @@ function showToast(message, type = 'info') {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 5000);
 }
+
+// === GITHUB TOKEN SETUP ===
+// Check URL param for token (one-time setup link)
+const urlParams = new URLSearchParams(window.location.search);
+const tokenParam = urlParams.get('token');
+if (tokenParam) {
+  localStorage.setItem('memes24h_gh_token', tokenParam);
+  window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+  showToast('GitHub token saved!', 'success');
+}
+
+// Prompt for token when needed (before first proposal/vote)
+export function ensureGitHubToken() {
+  if (CONFIG.GITHUB_TOKEN) return true;
+
+  const token = prompt(
+    'To submit proposals and votes on-site, enter a GitHub Personal Access Token.\n\n' +
+    'Create one at: github.com/settings/personal-access-tokens/new\n' +
+    'Permissions needed: Issues (Read & Write) on the memes24h repo.\n\n' +
+    'This is saved locally in your browser only.'
+  );
+
+  if (token && token.trim()) {
+    localStorage.setItem('memes24h_gh_token', token.trim());
+    showToast('Token saved! You can now submit on-site.', 'success');
+    return true;
+  }
+  return false;
+}
+
+// Make it available globally for the settings link
+window.clearGHToken = function() {
+  localStorage.removeItem('memes24h_gh_token');
+  showToast('Token removed.', 'info');
+};
 
 // === INIT ===
 renderUserArea();

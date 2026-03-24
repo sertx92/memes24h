@@ -46,7 +46,11 @@ export const CONFIG = {
   // GitHub fine-grained PAT (issues:write only)
   // This token can ONLY create issues. Safe to expose in client code.
   // To rotate: create new fine-grained PAT with Repository > Issues > Write
-  GITHUB_TOKEN: '',  // Set this after creating the PAT
+  // Token loaded from localStorage (user enters it once)
+  // Or set via URL param: ?token=xxx
+  get GITHUB_TOKEN() {
+    return localStorage.getItem('memes24h_gh_token') || '';
+  },
 
   // Cache TTLs (ms)
   CACHE_PROPOSALS_TTL: 5 * 60 * 1000,  // 5 min
