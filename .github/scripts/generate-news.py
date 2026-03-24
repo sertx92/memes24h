@@ -108,13 +108,11 @@ def format_tdh(tdh):
 # =============================================
 
 def build_market_recap(collections):
-    """FIXED: Market recap with sales, floor, volume, whales."""
+    """FIXED: Market recap + detailed sales card for Memes."""
     print("Building market recap...")
     news = []
-
-    all_sales_text = []
-    all_data_boxes = []
     all_whales = []
+    ticker_data = []  # For the ticker strip
 
     for c in collections:
         stats = fetch_opensea_stats(c['slug'])
@@ -123,63 +121,83 @@ def build_market_recap(collections):
 
         floor = stats['total'].get('floor_price', 0)
         floor_sym = stats['total'].get('floor_price_symbol', 'ETH')
+        total_volume = stats['total'].get('volume', 0)
+        total_sales = stats['total'].get('sales', 0)
         holders = stats['total'].get('num_owners', 0)
         vol_24h = stats['intervals'][0].get('volume', 0) if stats.get('intervals') else 0
         sales_24h = stats['intervals'][0].get('sales', 0) if stats.get('intervals') else 0
-        vol_7d = stats['intervals'][1].get('volume', 0) if stats.get('intervals') and len(stats['intervals']) > 1 else 0
 
-        all_data_boxes.append({'label': f"{c['name']} Floor", 'value': str(floor), 'sub': floor_sym})
-        if sales_24h > 0:
-            all_data_boxes.append({'label': f"{c['name']} 24h", 'value': f"{vol_24h:.2f}", 'sub': f'ETH ({sales_24h} sales)'})
-            all_sales_text.append(f"{c['name']}: {sales_24h} sales, {vol_24h:.2f} ETH volume, floor {floor} {floor_sym}")
-        else:
-            all_sales_text.append(f"{c['name']}: no sales in 24h, floor {floor} {floor_sym}")
+        # Ticker data
+        ticker_data.append({'name': c['name'], 'floor': floor, 'floor_sym': floor_sym,
+                           'vol_24h': vol_24h, 'sales_24h': sales_24h,
+                           'total_volume': total_volume, 'total_sales': total_sales})
 
-        # Whale detection
-        sales_data = fetch_opensea_sales(c['slug'], 50)
-        if sales_data and 'asset_events' in sales_data:
-            buyers = {}
-            notable_sales = []
-            for e in sales_data['asset_events']:
-                price = int(e['payment']['quantity']) / 1e18
-                buyer = e['buyer']
-                name = e['nft']['name']
-                if price >= 0.1:  # Notable sale threshold
-                    notable_sales.append(f'"{name}" for {price:.3f} ETH')
-                if buyer not in buyers:
-                    buyers[buyer] = {'count': 0, 'spent': 0, 'last': ''}
-                buyers[buyer]['count'] += 1
-                buyers[buyer]['spent'] += price
-                if not buyers[buyer]['last']:
-                    buyers[buyer]['last'] = name
+        # Detailed sales analysis (Memes only for now)
+        if c['slug'] == 'thememes6529':
+            sales_data = fetch_opensea_sales(c['slug'], 50)
+            if sales_data and 'asset_events' in sales_data:
+                buyers = {}
+                highest_sale = {'name': '', 'price': 0}
+                direct_sales = 0
+                accept_offers = 0
+                sale_details = []
 
-            for addr, info in buyers.items():
-                if info['count'] >= 3:
-                    short = addr[:6] + '...' + addr[-4:]
-                    all_whales.append({
-                        'address': short,
-                        'count': info['count'],
-                        'spent': info['spent'],
-                        'last': info['last'],
-                        'collection': c['name']
-                    })
+                for e in sales_data['asset_events']:
+                    price = int(e['payment']['quantity']) / 1e18
+                    buyer = e['buyer']
+                    seller = e['seller']
+                    name = e['nft']['name']
 
-            if notable_sales:
-                all_sales_text.append(f"Notable: {', '.join(notable_sales[:3])}")
+                    if price > highest_sale['price']:
+                        highest_sale = {'name': name, 'price': price}
 
-    # Build market recap card
-    summary = ' | '.join(all_sales_text[:4])
-    news.append({
-        'category': 'MARKET RECAP',
-        'headline': 'Daily Market Overview',
-        'summary': summary,
-        'source': 'OpenSea',
-        'link': 'https://opensea.io/collection/thememes6529',
-        'image': None,
-        'dataBoxes': all_data_boxes[:4]
-    })
+                    # Detect direct sale vs accept offer (heuristic: order_hash presence)
+                    if e.get('order_hash'):
+                        direct_sales += 1
+                    else:
+                        accept_offers += 1
 
-    # Whale alerts (if any)
+                    sale_details.append(f'"{name}" {price:.3f} ETH')
+
+                    if buyer not in buyers:
+                        buyers[buyer] = {'count': 0, 'spent': 0, 'last': ''}
+                    buyers[buyer]['count'] += 1
+                    buyers[buyer]['spent'] += price
+                    if not buyers[buyer]['last']:
+                        buyers[buyer]['last'] = name
+
+                # Sales breaking news card
+                summary = f'{sales_24h} sales in 24h for {vol_24h:.2f} ETH total volume.'
+                if highest_sale['price'] > 0:
+                    summary += f' Highest: "{highest_sale["name"]}" at {highest_sale["price"]:.3f} ETH.'
+                summary += f' Listings: {direct_sales} | Offers accepted: {accept_offers}.'
+
+                news.append({
+                    'category': 'SALES 24H',
+                    'headline': f'{sales_24h} Meme Sales Today - {vol_24h:.2f} ETH Volume',
+                    'summary': summary,
+                    'source': 'OpenSea',
+                    'link': 'https://opensea.io/collection/thememes6529',
+                    'image': None,
+                    'dataBoxes': [
+                        {'label': 'Total Sales', 'value': str(sales_24h), 'sub': '24h'},
+                        {'label': 'Volume', 'value': f'{vol_24h:.2f}', 'sub': 'ETH'},
+                        {'label': 'Top Sale', 'value': f'{highest_sale["price"]:.3f}', 'sub': highest_sale['name'][:20]},
+                        {'label': 'Floor', 'value': str(floor), 'sub': floor_sym}
+                    ]
+                })
+
+                # Whales
+                for addr, info in buyers.items():
+                    if info['count'] >= 3:
+                        short = addr[:6] + '...' + addr[-4:]
+                        all_whales.append({
+                            'address': short, 'count': info['count'],
+                            'spent': info['spent'], 'last': info['last'],
+                            'collection': c['name']
+                        })
+
+    # Whale alerts
     all_whales.sort(key=lambda x: x['count'], reverse=True)
     for whale in all_whales[:2]:
         news.append({
@@ -187,12 +205,11 @@ def build_market_recap(collections):
             'headline': f"Whale {whale['address']} Buys {whale['count']} {whale['collection']}",
             'summary': f"Total spent: {whale['spent']:.3f} ETH. Last purchase: \"{whale['last']}\".",
             'source': 'OpenSea',
-            'link': f'https://opensea.io/collection/thememes6529',
-            'image': None,
-            'dataBoxes': None
+            'link': 'https://opensea.io/collection/thememes6529',
+            'image': None, 'dataBoxes': None
         })
 
-    return news
+    return news, ticker_data
 
 
 def build_top3_leaderboard(wave_id, wave_name, category):
@@ -234,12 +251,20 @@ def build_top3_leaderboard(wave_id, wave_name, category):
 # VARIABLE NEWS: AI-generated from wave activity
 # =============================================
 
+    # Waves to EXCLUDE from chat news (only leaderboard from these)
+LEADERBOARD_ONLY_WAVES = {MEMES_WAVE_ID, SR_WAVE_ID}
+
 def gather_significant_wave_data(waves):
-    """Only gather waves with significant activity (>= MIN_MSGS_6H in 6 hours)."""
+    """Only gather waves with significant activity (>= MIN_MSGS_6H in 6 hours).
+    Excludes Main Stage and SuperRare (leaderboard only)."""
     wave_data = []
     six_hours_ago = (datetime.now(timezone.utc) - timedelta(hours=6)).timestamp() * 1000
 
     for w in waves:
+        # Skip leaderboard-only waves
+        if w['id'] in LEADERBOARD_ONLY_WAVES:
+            print(f"  Skipping {w['name']}: leaderboard only (no chat news)")
+            continue
         drops = fetch_6529_drops(w['id'], 20)
         if not drops:
             continue
@@ -389,14 +414,20 @@ def generate_additional_fallback(wave_data):
 # OUTPUT
 # =============================================
 
-def build_output(fixed_news, variable_news, market_data_raw):
-    """Combine fixed + variable news, build ticker."""
+def build_output(fixed_news, variable_news, ticker_data):
+    """Combine fixed + variable news, build ticker from market data."""
     all_news = fixed_news + variable_news
-    all_news = all_news[:13]  # Cap at 13 (3 fixed + 10 variable max)
+    all_news = all_news[:13]
 
     ticker = []
-    for m in market_data_raw:
+    for m in ticker_data:
         ticker.append({'label': f"{m['name']} Floor", 'value': f"{m.get('floor', '?')} {m.get('floor_sym', 'ETH')}"})
+        if m.get('vol_24h', 0) > 0:
+            ticker.append({'label': f"{m['name']} 24h Vol", 'value': f"{m['vol_24h']:.2f} ETH"})
+        if m.get('total_volume', 0) > 0:
+            ticker.append({'label': f"{m['name']} Total Vol", 'value': f"{m['total_volume']:.0f} ETH"})
+        if m.get('total_sales', 0) > 0:
+            ticker.append({'label': f"{m['name']} Total Sales", 'value': f"{m['total_sales']:,}"})
 
     return {
         'generated_at': datetime.now(timezone.utc).isoformat(),
@@ -569,8 +600,8 @@ def main():
         }
 
     # ---- FIXED NEWS (always present) ----
-    print("\n--- Fixed: Market Recap ---")
-    market_news = build_market_recap(config['collections'])
+    print("\n--- Fixed: Market Recap + Sales ---")
+    market_news, ticker_data = build_market_recap(config['collections'])
 
     print("\n--- Fixed: Top 3 Memes ---")
     memes_top3 = build_top3_leaderboard(MEMES_WAVE_ID, 'The Memes - Main Stage', 'MAIN STAGE TOP 3')
@@ -586,8 +617,8 @@ def main():
 
     fixed_news = market_news + memes_top3 + sr_top3 + punk6529_news + tdh_mill_news
 
-    # ---- VARIABLE NEWS (AI-generated) ----
-    print("\n--- Gathering wave activity (min 3 msgs/6h) ---")
+    # ---- VARIABLE NEWS (AI from chat waves ONLY, not Main Stage/SR) ----
+    print("\n--- Gathering wave activity (min 3 msgs/6h, excluding Main Stage/SR) ---")
     wave_data = gather_significant_wave_data(config['waves'])
     print(f"  {len(wave_data)} waves with significant activity")
 
@@ -596,18 +627,7 @@ def main():
     variable_news = generate_additional_news_ai(wave_data, max_news=max(0, max_additional))
 
     # ---- BUILD OUTPUT ----
-    # Store raw market data for ticker
-    market_raw = []
-    for c in config['collections']:
-        stats = fetch_opensea_stats(c['slug'])
-        if stats:
-            market_raw.append({
-                'name': c['name'],
-                'floor': stats['total'].get('floor_price', 0),
-                'floor_sym': stats['total'].get('floor_price_symbol', 'ETH')
-            })
-
-    output = build_output(fixed_news, variable_news, market_raw)
+    output = build_output(fixed_news, variable_news, ticker_data)
     print(f"\n--- Total: {len(output['news'])} news items ({len(fixed_news)} fixed + {len(variable_news)} variable) ---")
 
     # ---- PUBLISH ----

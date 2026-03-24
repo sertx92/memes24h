@@ -93,6 +93,14 @@
     font-size: 18px; letter-spacing: 2px; padding: 2px 12px; text-decoration: none;
   }
   .gov-btn:hover { background: rgba(204,34,0,0.5); color: #fff; }
+  .tool-btn {
+    background: rgba(80,140,255,0.15); border: 1px solid rgba(80,140,255,0.25);
+    color: rgba(255,255,255,0.5); font-family: 'Teko', sans-serif; font-weight: 600;
+    font-size: 14px; letter-spacing: 2px; padding: 2px 10px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tool-btn:hover { background: rgba(80,140,255,0.3); color: #fff; }
+  .tool-btn.recording { background: rgba(204,34,0,0.4); border-color: #cc2200; color: #ff4444; animation: liveBlink 0.5s step-end infinite; }
   .live-indicator { display: flex; align-items: center; gap: 8px; }
   .live-dot {
     width: 12px; height: 12px; background: #cc2200; border-radius: 50%;
@@ -439,6 +447,8 @@
     </div>
     <div class="top-right">
       <a href="https://sertx92.github.io/memes24h/governance/" target="_blank" class="gov-btn">GOV</a>
+      <button class="tool-btn" id="btnScreen" title="Screenshot">SCREEN</button>
+      <button class="tool-btn" id="btnGif" title="Record GIF">GIF</button>
       <div class="live-indicator"><div class="live-dot"></div><span class="live-text">LIVE</span></div>
       <span class="clock" id="clock">--:--:--</span>
       <span class="date-display" id="dateDisplay"></span>
@@ -475,14 +485,17 @@
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #2</span><span class="ticker-item-value">awhurst 556K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #3</span><span class="ticker-item-value">blake69 301K</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-brand"><span class="ticker-brand-badge">6529</span><span class="ticker-brand-text">Decentralized News</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">Memes Total Vol</span><span class="ticker-item-value">26,787 ETH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Sales</span><span class="ticker-item-value">94,428</span></div><div class="ticker-separator">|</div>
+        <!-- duplicate -->
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #1</span><span class="ticker-item-value">dangiuz 98.6M</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #2</span><span class="ticker-item-value">BrynnAlise 4.0M</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #3</span><span class="ticker-item-value">MintFace 630K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #2</span><span class="ticker-item-value">awhurst 556K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #3</span><span class="ticker-item-value">blake69 301K</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-brand"><span class="ticker-brand-badge">6529</span><span class="ticker-brand-text">Decentralized News</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">Memes Total Vol</span><span class="ticker-item-value">26,787 ETH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Sales</span><span class="ticker-item-value">94,428</span></div><div class="ticker-separator">|</div>
       </div>
     </div>
   </div>
@@ -690,6 +703,89 @@
   autoTimer = setInterval(() => showCard(currentIndex+1), CARD_DURATION);
   loadDynamicNews();
   setInterval(loadDynamicNews, 6*60*60*1000);
+
+  // === SCREENSHOT & GIF ===
+  // Load html2canvas from CDN
+  const h2cScript = document.createElement('script');
+  h2cScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  document.head.appendChild(h2cScript);
+
+  // Screenshot
+  document.getElementById('btnScreen').addEventListener('click', async () => {
+    const btn = document.getElementById('btnScreen');
+    btn.textContent = '...';
+    try {
+      const canvas = await html2canvas(document.getElementById('container'), {
+        width: 1080, height: 1080, scale: 1,
+        backgroundColor: '#06081a',
+        useCORS: true, allowTaint: true
+      });
+      const link = document.createElement('a');
+      link.download = '6529news_' + Date.now() + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch(e) { console.error('Screenshot failed:', e); }
+    btn.textContent = 'SCREEN';
+  });
+
+  // GIF recording (captures one full cycle of news cards)
+  let gifRecording = false;
+  document.getElementById('btnGif').addEventListener('click', async () => {
+    if (gifRecording) return;
+    gifRecording = true;
+    const btn = document.getElementById('btnGif');
+    btn.classList.add('recording');
+    btn.textContent = 'REC...';
+
+    // Load gif.js
+    if (!window.GIF) {
+      await new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js';
+        s.onload = resolve;
+        document.head.appendChild(s);
+      });
+    }
+
+    const gif = new GIF({
+      workers: 2,
+      quality: 10,
+      width: 1080,
+      height: 1080,
+      workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+    });
+
+    const totalFrames = NEWS.length;
+    const frameDelay = CARD_DURATION;
+
+    // Capture each news card
+    for (let i = 0; i < totalFrames; i++) {
+      showCard(i);
+      await new Promise(r => setTimeout(r, 800)); // Wait for animation
+      try {
+        const canvas = await html2canvas(document.getElementById('container'), {
+          width: 1080, height: 1080, scale: 0.5,
+          backgroundColor: '#06081a',
+          useCORS: true, allowTaint: true
+        });
+        gif.addFrame(canvas, { delay: frameDelay, copy: true });
+        btn.textContent = `${i+1}/${totalFrames}`;
+      } catch(e) { console.error('Frame failed:', e); }
+    }
+
+    gif.on('finished', (blob) => {
+      const link = document.createElement('a');
+      link.download = '6529news_' + Date.now() + '.gif';
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      btn.classList.remove('recording');
+      btn.textContent = 'GIF';
+      gifRecording = false;
+      resetAutoplay();
+    });
+
+    gif.render();
+  });
 </script>
 </body>
 </html>
