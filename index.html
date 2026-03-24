@@ -9,738 +9,326 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
-    width: 1080px;
-    height: 1080px;
+  html, body {
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
     font-family: 'Oswald', sans-serif;
-    background: #0a0a18;
-    position: relative;
+    background: #06081a;
   }
 
-  /* === 90s/2000s BACKGROUND === */
+  /* Scale to fit viewport while keeping 1:1 ratio */
+  .container {
+    width: 1080px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    transform-origin: top left;
+  }
+
+  /* === BACKGROUND === */
   .bg {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, #0c1428 0%, #0a0e1e 40%, #10152a 100%);
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #0c1428 0%, #080e1e 50%, #0c1428 100%);
     z-index: 0;
   }
-
-  /* Globe/world map subtle pattern */
   .bg::before {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background:
-      radial-gradient(circle at 50% 50%, rgba(30,60,120,0.15) 0%, transparent 60%),
-      radial-gradient(circle at 20% 80%, rgba(0,80,180,0.06) 0%, transparent 40%),
-      radial-gradient(circle at 80% 20%, rgba(0,80,180,0.06) 0%, transparent 40%);
+      radial-gradient(circle at 50% 30%, rgba(30,60,140,0.12) 0%, transparent 55%),
+      radial-gradient(circle at 20% 80%, rgba(0,60,160,0.05) 0%, transparent 40%),
+      radial-gradient(circle at 85% 70%, rgba(0,60,160,0.05) 0%, transparent 40%);
   }
-
-  /* Grid overlay - very 2000s CNN */
   .bg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background-image:
-      linear-gradient(rgba(0,100,255,0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,100,255,0.02) 1px, transparent 1px);
-    background-size: 30px 30px;
+      linear-gradient(rgba(0,80,200,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,80,200,0.015) 1px, transparent 1px);
+    background-size: 36px 36px;
   }
 
-  /* === SCANLINES (CRT feel) === */
   .scanlines {
-    position: absolute;
-    inset: 0;
-    z-index: 50;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      0deg, transparent, transparent 3px,
-      rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
-    );
+    position: absolute; inset: 0; z-index: 50; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px);
   }
 
-  /* VHS noise flicker */
-  .scanlines::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.005);
-    animation: vhsFlicker 0.15s infinite alternate;
-  }
-
-  @keyframes vhsFlicker {
-    0% { opacity: 0.5; }
-    100% { opacity: 1; }
-  }
-
-  /* === TOP CHROME BAR (2000s bevel) === */
-  .top-chrome {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 56px;
-    background: linear-gradient(180deg, #1e3a6e 0%, #102040 60%, #0a1830 100%);
-    border-bottom: 3px solid #cc2200;
+  /* === TOP BAR === */
+  .top-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 72px;
+    background: linear-gradient(180deg, #1a3366 0%, #0e2040 70%, #0a1830 100%);
+    border-bottom: 4px solid #cc2200;
     z-index: 20;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    display: flex; align-items: center;
+    padding: 0 28px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+  }
+  .top-bar::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, rgba(80,140,255,0.2), rgba(80,140,255,0.5), rgba(80,140,255,0.2));
   }
 
-  /* Bevel line on top */
-  .top-chrome::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(100,160,255,0.3), rgba(100,160,255,0.6), rgba(100,160,255,0.3));
-  }
-
-  /* Logo */
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
-
+  .logo { display: flex; align-items: center; }
   .logo-num {
-    font-family: 'Teko', sans-serif;
-    font-weight: 700;
-    font-size: 38px;
-    color: #fff;
-    background: linear-gradient(180deg, #cc2200, #991100);
-    padding: 0 10px;
-    line-height: 1;
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 48px; color: #fff;
+    background: linear-gradient(180deg, #cc2200, #991100); padding: 0 14px; line-height: 1;
     letter-spacing: 1px;
-    text-shadow: 1px 1px 0 #660000;
     box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1);
   }
-
   .logo-news {
-    font-family: 'Teko', sans-serif;
-    font-weight: 700;
-    font-size: 38px;
-    color: #fff;
-    letter-spacing: 3px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-    margin-left: 6px;
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 48px; color: #fff;
+    letter-spacing: 4px; margin-left: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
-
   .logo-24h {
-    font-family: 'Teko', sans-serif;
-    font-weight: 600;
-    font-size: 16px;
-    color: #ffcc00;
-    background: rgba(0,0,0,0.3);
-    padding: 1px 8px;
-    margin-left: 10px;
-    border: 1px solid rgba(255,204,0,0.3);
-    letter-spacing: 2px;
-    align-self: center;
+    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 20px; color: #ffcc00;
+    background: rgba(0,0,0,0.3); padding: 2px 10px; margin-left: 12px;
+    border: 1px solid rgba(255,204,0,0.3); letter-spacing: 2px;
   }
 
-  /* Right side of top bar */
-  .top-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .live-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .live-dot {
-    width: 10px; height: 10px;
-    background: #cc2200;
-    border-radius: 50%;
-    animation: liveBlink 1s step-end infinite;
-    box-shadow: 0 0 6px rgba(204,34,0,0.8);
-  }
-
-  @keyframes liveBlink {
-    50% { opacity: 0.2; }
-  }
-
-  .live-text {
-    font-family: 'Teko', sans-serif;
-    font-weight: 600;
-    font-size: 18px;
-    color: #cc2200;
-    letter-spacing: 3px;
-  }
-
-  .clock {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 16px;
-    color: rgba(255,255,255,0.7);
-    letter-spacing: 2px;
-  }
-
-  .date-display {
-    font-family: 'Oswald', sans-serif;
-    font-size: 12px;
-    color: rgba(255,255,255,0.4);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 20px; }
   .gov-btn {
-    background: rgba(204,34,0,0.3);
-    border: 1px solid rgba(204,34,0,0.5);
-    color: rgba(255,255,255,0.6);
-    font-family: 'Teko', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 2px;
-    padding: 2px 10px;
-    text-decoration: none;
-    transition: all 0.2s;
+    background: rgba(204,34,0,0.3); border: 1px solid rgba(204,34,0,0.5);
+    color: rgba(255,255,255,0.6); font-family: 'Teko', sans-serif; font-weight: 600;
+    font-size: 18px; letter-spacing: 2px; padding: 2px 12px; text-decoration: none;
   }
-
   .gov-btn:hover { background: rgba(204,34,0,0.5); color: #fff; }
+  .live-indicator { display: flex; align-items: center; gap: 8px; }
+  .live-dot {
+    width: 12px; height: 12px; background: #cc2200; border-radius: 50%;
+    animation: liveBlink 1s step-end infinite;
+    box-shadow: 0 0 8px rgba(204,34,0,0.8);
+  }
+  @keyframes liveBlink { 50% { opacity: 0.2; } }
+  .live-text { font-family: 'Teko', sans-serif; font-weight: 600; font-size: 22px; color: #cc2200; letter-spacing: 3px; }
+  .clock { font-family: 'Share Tech Mono', monospace; font-size: 20px; color: rgba(255,255,255,0.7); letter-spacing: 2px; }
+  .date-display { font-family: 'Oswald', sans-serif; font-size: 14px; color: rgba(255,255,255,0.35); letter-spacing: 1px; }
 
-  /* === CATEGORY TAB BAR (very 2000s) === */
+  /* === CATEGORY BAR === */
   .cat-bar {
-    position: absolute;
-    top: 59px; left: 0; right: 0;
-    height: 32px;
-    background: linear-gradient(180deg, #18284a, #0e1a30);
-    border-bottom: 1px solid rgba(100,160,255,0.15);
-    z-index: 18;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    gap: 4px;
-    box-shadow: inset 0 1px 0 rgba(100,160,255,0.08);
+    position: absolute; top: 76px; left: 0; right: 0; height: 38px;
+    background: linear-gradient(180deg, #162844, #0e1a30);
+    border-bottom: 1px solid rgba(80,140,255,0.12); z-index: 18;
+    display: flex; align-items: center; padding: 0 28px;
+    box-shadow: inset 0 1px 0 rgba(80,140,255,0.06);
   }
-
   .cat-tab {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 500;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    color: rgba(255,255,255,0.35);
-    padding: 4px 12px;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    border-bottom: 2px solid transparent;
+    font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 14px;
+    letter-spacing: 2px; color: #ffcc00; text-transform: uppercase;
+    padding: 4px 16px; border-bottom: 2px solid #cc2200;
+    background: rgba(204,34,0,0.08);
   }
-
-  .cat-tab.active {
-    color: #ffcc00;
-    border-bottom-color: #cc2200;
-    background: rgba(204,34,0,0.1);
-  }
-
   .cat-counter {
-    margin-left: auto;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: rgba(255,255,255,0.3);
-    letter-spacing: 1px;
+    margin-left: auto; font-family: 'Share Tech Mono', monospace;
+    font-size: 16px; color: rgba(255,255,255,0.3); letter-spacing: 1px;
   }
 
-  /* === MAIN NEWS AREA (full width) === */
+  /* === MAIN NEWS AREA === */
   .news-area {
-    position: absolute;
-    top: 91px; left: 0; right: 0;
-    bottom: 100px;
-    z-index: 10;
+    position: absolute; top: 114px; left: 0; right: 0; bottom: 130px;
+    z-index: 10; padding: 0 32px;
   }
 
-  /* News cards */
   .news-card {
-    position: absolute;
-    inset: 0;
-    padding: 24px 28px 16px;
-    opacity: 0;
-    display: flex;
-    flex-direction: column;
+    position: absolute; inset: 0;
+    padding: 28px 32px 20px;
+    opacity: 0; display: flex; flex-direction: column;
     pointer-events: none;
   }
-
-  .news-card.active {
-    opacity: 1;
-    pointer-events: auto;
-    animation: cardIn 0.6s ease-out forwards;
-  }
-
-  .news-card.exit {
-    animation: cardOut 0.4s ease-in forwards;
-  }
-
-  @keyframes cardIn {
-    from { opacity: 0; transform: translateX(30px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  @keyframes cardOut {
-    from { opacity: 1; }
-    to { opacity: 0; transform: translateX(-20px); }
-  }
+  .news-card.active { opacity: 1; pointer-events: auto; animation: cardIn 0.5s ease-out forwards; }
+  .news-card.exit { animation: cardOut 0.3s ease-in forwards; }
+  @keyframes cardIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes cardOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-15px); } }
 
   /* Category badge */
-  .card-cat-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
+  .card-cat-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
   .card-cat {
-    background: linear-gradient(180deg, #cc2200, #991100);
-    color: #fff;
-    font-family: 'Teko', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 2px 14px;
+    background: linear-gradient(180deg, #cc2200, #991100); color: #fff;
+    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 18px;
+    letter-spacing: 2px; text-transform: uppercase; padding: 2px 18px;
     box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
   }
+  .card-cat-line { flex: 1; height: 2px; background: linear-gradient(90deg, #cc2200, rgba(204,34,0,0.05)); }
 
-  .card-cat-line {
-    flex: 1;
-    height: 2px;
-    background: linear-gradient(90deg, #cc2200, rgba(204,34,0,0.1), transparent);
+  /* Layout: image centered above, text below */
+  .card-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+  /* Image preview - centered, prominent */
+  .card-preview {
+    width: 100%; max-height: 360px; overflow: hidden;
+    border: 2px solid rgba(80,140,255,0.12); background: rgba(0,0,0,0.4);
+    margin-bottom: 18px; position: relative; opacity: 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
   }
-
-  /* Body layout */
-  .card-body {
-    display: flex;
-    gap: 24px;
-    flex: 1;
-    min-height: 0;
-  }
-
-  .card-text {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+  .news-card.active .card-preview { animation: previewIn 0.5s 0.2s ease-out forwards; }
+  @keyframes previewIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+  .card-preview img { max-width: 100%; max-height: 360px; object-fit: contain; }
+  .card-preview-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    padding: 24px 14px 8px; font-family: 'Oswald', sans-serif;
+    font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5);
+    letter-spacing: 1px; text-transform: uppercase; text-align: center;
   }
 
   /* Headline */
   .card-headline {
-    color: #ffffff;
-    font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 30px;
-    line-height: 1.15;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    color: #ffffff; font-family: 'Oswald', sans-serif; font-weight: 700;
+    font-size: 38px; line-height: 1.15; margin-bottom: 12px;
+    text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     opacity: 0;
   }
+  .news-card.active .card-headline { animation: textIn 0.4s 0.15s ease-out forwards; }
+  @keyframes textIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  .news-card.active .card-headline {
-    animation: headlineIn 0.5s 0.15s ease-out forwards;
-  }
-
-  @keyframes headlineIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Divider - thick 2000s style */
-  .card-divider {
-    width: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #cc2200, #ffcc00);
-    margin-bottom: 12px;
-  }
-
-  .news-card.active .card-divider {
-    animation: divGrow 0.4s 0.3s ease-out forwards;
-  }
-
-  @keyframes divGrow {
-    to { width: 120px; }
-  }
+  /* Divider */
+  .card-divider { width: 0; height: 3px; background: linear-gradient(90deg, #cc2200, #ffcc00); margin-bottom: 14px; }
+  .news-card.active .card-divider { animation: divGrow 0.4s 0.25s ease-out forwards; }
+  @keyframes divGrow { to { width: 140px; } }
 
   /* Summary */
   .card-summary {
-    color: rgba(200,210,230,0.55);
-    font-family: 'Oswald', sans-serif;
-    font-weight: 400;
-    font-size: 15px;
-    line-height: 1.5;
-    opacity: 0;
+    color: rgba(220,225,240,0.7); font-family: 'Oswald', sans-serif; font-weight: 400;
+    font-size: 20px; line-height: 1.45; opacity: 0;
   }
+  .news-card.active .card-summary { animation: textIn 0.4s 0.35s ease-out forwards; }
 
-  .news-card.active .card-summary {
-    animation: textIn 0.5s 0.4s ease-out forwards;
-  }
-
-  @keyframes textIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* Data boxes - 2000s bevel style */
+  /* Data boxes - full width at bottom */
   .card-data {
-    display: flex;
-    gap: 2px;
-    margin-top: auto;
-    padding-top: 12px;
-    opacity: 0;
+    display: flex; gap: 3px; margin-top: auto; padding-top: 16px; opacity: 0;
+    width: 100%;
   }
-
-  .news-card.active .card-data {
-    animation: textIn 0.5s 0.5s ease-out forwards;
-  }
-
+  .news-card.active .card-data { animation: textIn 0.4s 0.45s ease-out forwards; }
   .data-box {
-    flex: 1;
-    background: linear-gradient(180deg, rgba(20,40,80,0.8), rgba(10,20,40,0.9));
-    border: 1px solid rgba(100,160,255,0.12);
-    padding: 10px 12px;
-    text-align: center;
-    box-shadow: inset 0 1px 0 rgba(100,160,255,0.06);
+    flex: 1; background: linear-gradient(180deg, rgba(18,36,72,0.9), rgba(10,20,44,0.95));
+    border: 1px solid rgba(80,140,255,0.1); padding: 14px 10px; text-align: center;
+    box-shadow: inset 0 1px 0 rgba(80,140,255,0.05);
   }
-
+  .data-box:first-child { border-radius: 4px 0 0 4px; }
+  .data-box:last-child { border-radius: 0 4px 4px 0; }
   .data-label {
-    font-family: 'Oswald', sans-serif;
-    font-size: 9px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    color: rgba(100,180,255,0.5);
-    text-transform: uppercase;
-    margin-bottom: 4px;
+    font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+    letter-spacing: 1.5px; color: rgba(80,160,255,0.5); text-transform: uppercase; margin-bottom: 4px;
   }
-
   .data-value {
-    font-family: 'Teko', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: #ffcc00;
-    text-shadow: 0 0 8px rgba(255,204,0,0.2);
+    font-family: 'Teko', sans-serif; font-size: 30px; font-weight: 700;
+    color: #ffcc00; text-shadow: 0 0 10px rgba(255,204,0,0.15);
   }
-
-  .data-sub {
-    font-family: 'Oswald', sans-serif;
-    font-size: 10px;
-    color: rgba(255,255,255,0.2);
-    margin-top: 1px;
-  }
+  .data-sub { font-family: 'Oswald', sans-serif; font-size: 12px; color: rgba(255,255,255,0.2); margin-top: 2px; }
 
   /* Source */
   .card-source {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 10px;
-    opacity: 0;
+    display: flex; align-items: center; gap: 8px; padding-top: 12px; opacity: 0;
   }
-
-  .news-card.active .card-source {
-    animation: textIn 0.4s 0.55s ease-out forwards;
-  }
-
-  .source-dot {
-    width: 6px; height: 6px;
-    background: #cc2200;
-    border-radius: 50%;
-  }
-
+  .news-card.active .card-source { animation: textIn 0.3s 0.5s ease-out forwards; }
+  .source-dot { width: 7px; height: 7px; background: #cc2200; border-radius: 50%; }
   .source-text {
-    color: rgba(255,255,255,0.2);
-    font-family: 'Oswald', sans-serif;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    color: rgba(255,255,255,0.25); font-family: 'Oswald', sans-serif;
+    font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
   }
-
   .source-link {
-    color: rgba(100,180,255,0.4);
-    font-family: 'Oswald', sans-serif;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-decoration: none;
-    margin-left: 6px;
+    color: rgba(80,160,255,0.4); font-family: 'Oswald', sans-serif;
+    font-size: 13px; letter-spacing: 1px; text-decoration: none; margin-left: 6px;
   }
+  .source-link:hover { color: rgba(80,160,255,0.8); }
 
-  .source-link:hover { color: rgba(100,180,255,0.8); }
-
-  /* Card preview image */
-  .card-preview {
-    flex-shrink: 0;
-    width: 240px;
-    height: 100%;
-    max-height: 340px;
-    overflow: hidden;
-    border: 2px solid rgba(100,160,255,0.15);
-    background: rgba(0,0,0,0.4);
-    opacity: 0;
-    position: relative;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,50,100,0.1);
-  }
-
-  .news-card.active .card-preview {
-    animation: previewIn 0.6s 0.3s ease-out forwards;
-  }
-
-  @keyframes previewIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .card-preview img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-  }
-
-  .card-preview-label {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.85));
-    padding: 20px 8px 6px;
-    font-family: 'Oswald', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.5);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    text-align: center;
-  }
-
-  /* === HEADLINE BAR (bottom) === */
+  /* === HEADLINE BAR === */
   .headline-bar {
-    position: absolute;
-    bottom: 50px; left: 0; right: 0;
-    height: 50px;
-    z-index: 15;
-    display: flex;
+    position: absolute; bottom: 64px; left: 0; right: 0; height: 66px; z-index: 15; display: flex;
   }
-
   .headline-label {
-    background: linear-gradient(180deg, #cc2200, #991100);
-    color: #fff;
-    font-family: 'Teko', sans-serif;
-    font-weight: 700;
-    font-size: 22px;
-    letter-spacing: 4px;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    flex-shrink: 0;
-    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+    background: linear-gradient(180deg, #cc2200, #991100); color: #fff;
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 28px;
+    letter-spacing: 4px; display: flex; align-items: center; padding: 0 20px;
     box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1);
   }
-
   .headline-content {
-    flex: 1;
-    background: linear-gradient(180deg, #142040, #0e1830);
-    border-top: 2px solid rgba(204,34,0,0.6);
-    border-bottom: 2px solid rgba(0,50,100,0.4);
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(100,160,255,0.08);
+    flex: 1; background: linear-gradient(180deg, #142040, #0e1830);
+    border-top: 2px solid rgba(204,34,0,0.6); border-bottom: 2px solid rgba(0,40,90,0.4);
+    display: flex; align-items: center; padding: 0 24px; overflow: hidden;
   }
-
   .headline-text {
-    color: #ffffff;
-    font-family: 'Oswald', sans-serif;
-    font-weight: 600;
-    font-size: 17px;
-    letter-spacing: 1px;
-    white-space: nowrap;
-    text-transform: uppercase;
+    color: #ffffff; font-family: 'Oswald', sans-serif; font-weight: 600;
+    font-size: 20px; letter-spacing: 1px; white-space: nowrap; text-transform: uppercase;
+    flex: 1;
   }
-
-  /* Nav arrows in headline bar */
-  .nav-arrows {
-    display: flex;
-    gap: 2px;
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-
+  .nav-arrows { display: flex; gap: 3px; flex-shrink: 0; }
   .nav-btn {
-    width: 32px; height: 32px;
-    background: linear-gradient(180deg, rgba(30,60,110,0.6), rgba(15,30,55,0.8));
-    border: 1px solid rgba(100,160,255,0.15);
-    color: rgba(255,255,255,0.4);
-    font-size: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
+    width: 40px; height: 40px;
+    background: linear-gradient(180deg, rgba(26,51,102,0.6), rgba(14,32,64,0.8));
+    border: 1px solid rgba(80,140,255,0.12); color: rgba(255,255,255,0.4);
+    font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-
   .nav-btn:hover {
     background: linear-gradient(180deg, rgba(204,34,0,0.4), rgba(153,17,0,0.4));
-    color: #fff;
-    border-color: rgba(204,34,0,0.5);
+    color: #fff; border-color: rgba(204,34,0,0.5);
   }
 
-  /* Progress bar */
+  /* Progress */
   .progress-bar {
-    position: absolute;
-    bottom: 50px; left: 0; right: 0;
-    height: 3px;
-    background: rgba(0,0,0,0.3);
-    z-index: 16;
-    transform: translateY(-1px);
+    position: absolute; bottom: 64px; left: 0; right: 0; height: 3px;
+    background: rgba(0,0,0,0.3); z-index: 16; transform: translateY(-1px);
   }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #cc2200, #ffcc00); width: 0%; box-shadow: 0 0 8px rgba(255,204,0,0.3); }
 
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #cc2200, #ffcc00);
-    width: 0%;
-    box-shadow: 0 0 6px rgba(255,204,0,0.3);
-  }
-
-  /* === TICKER (bottom) === */
+  /* === TICKER === */
   .ticker-bar {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 50px;
-    z-index: 15;
-    display: flex;
-    background: linear-gradient(180deg, #0a1428, #060e1e);
-    border-top: 1px solid rgba(100,160,255,0.08);
+    position: absolute; bottom: 0; left: 0; right: 0; height: 64px; z-index: 15;
+    display: flex; background: linear-gradient(180deg, #0a1428, #060e1e);
+    border-top: 1px solid rgba(80,140,255,0.06);
   }
-
   .ticker-label {
-    background: linear-gradient(180deg, #1e3a6e, #102040);
-    color: #ffcc00;
-    font-family: 'Teko', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 2px;
-    display: flex;
-    align-items: center;
-    padding: 0 14px;
-    flex-shrink: 0;
+    background: linear-gradient(180deg, #1a3366, #102040); color: #ffcc00;
+    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 18px;
+    letter-spacing: 2px; display: flex; align-items: center; padding: 0 16px;
     border-right: 2px solid rgba(204,34,0,0.4);
-    box-shadow: inset 0 1px 0 rgba(100,160,255,0.1);
   }
-
-  .ticker-track {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-  }
-
-  .ticker-content {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    animation: tickerScroll 40s linear infinite;
-  }
-
-  @keyframes tickerScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  .ticker-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 24px;
-    flex-shrink: 0;
-  }
-
+  .ticker-track { flex: 1; overflow: hidden; display: flex; align-items: center; }
+  .ticker-content { display: flex; align-items: center; white-space: nowrap; animation: tickerScroll 50s linear infinite; }
+  @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .ticker-item { display: flex; align-items: center; gap: 10px; padding: 0 24px; flex-shrink: 0; }
   .ticker-item-label {
-    font-family: 'Oswald', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    color: rgba(100,180,255,0.4);
-    text-transform: uppercase;
+    font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 500;
+    letter-spacing: 1.5px; color: rgba(80,160,255,0.4); text-transform: uppercase;
   }
-
-  .ticker-item-value {
-    font-family: 'Teko', sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: #ffffff;
-  }
-
-  /* Color-coded ticker items */
-  .ticker-memes .ticker-item-label { color: #ff5533; font-size: 12px; font-weight: 600; }
-  .ticker-memes .ticker-item-value { color: #ffffff; }
-  .ticker-sr .ticker-item-label { color: #aa66ff; font-size: 12px; font-weight: 600; }
-  .ticker-sr .ticker-item-value { color: #ffffff; }
+  .ticker-item-value { font-family: 'Teko', sans-serif; font-size: 22px; font-weight: 600; color: #ffffff; }
+  .ticker-memes .ticker-item-label { color: #ff5533; font-size: 14px; font-weight: 600; }
+  .ticker-sr .ticker-item-label { color: #aa66ff; font-size: 14px; font-weight: 600; }
   .ticker-market .ticker-item-label { color: rgba(255,204,0,0.6); }
   .ticker-market .ticker-item-value { color: #ffcc00; }
+  .ticker-separator { color: rgba(80,140,255,0.1); font-size: 18px; flex-shrink: 0; }
 
-  /* 6529 branding badge in ticker */
-  .ticker-brand {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 0 28px;
-    flex-shrink: 0;
-  }
-
+  .ticker-brand { display: flex; align-items: center; padding: 0 28px; flex-shrink: 0; }
   .ticker-brand-badge {
-    background: #ffffff;
-    color: #0a0a18;
-    font-family: 'Teko', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 2px 8px;
-    letter-spacing: 1px;
-    line-height: 1;
+    background: #ffffff; color: #0a0a18; font-family: 'Teko', sans-serif;
+    font-weight: 700; font-size: 16px; padding: 2px 10px; letter-spacing: 1px; line-height: 1;
   }
-
   .ticker-brand-text {
-    font-family: 'Oswald', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.5);
-    text-transform: uppercase;
-    margin-left: 8px;
+    font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 500;
+    letter-spacing: 2px; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-left: 10px;
   }
 
-  .ticker-separator {
-    color: rgba(100,160,255,0.12);
-    font-size: 16px;
-    flex-shrink: 0;
-  }
+  /* Side accents */
+  .side-l { position: absolute; left: 0; top: 114px; bottom: 130px; width: 4px; z-index: 12; background: linear-gradient(180deg, #cc2200, rgba(204,34,0,0.05), #cc2200); }
+  .side-r { position: absolute; right: 0; top: 114px; bottom: 130px; width: 4px; z-index: 12; background: linear-gradient(180deg, rgba(80,140,255,0.08), rgba(80,140,255,0.03), rgba(80,140,255,0.08)); }
 
-  /* === SIDE ACCENT LINES (very 2000s) === */
-  .side-accent {
-    position: absolute;
-    left: 0; top: 91px; bottom: 100px;
-    width: 4px;
-    z-index: 12;
-    background: linear-gradient(180deg, #cc2200, rgba(204,34,0,0.1), #cc2200);
-  }
-
-  .side-accent-r {
-    position: absolute;
-    right: 0; top: 91px; bottom: 100px;
-    width: 4px;
-    z-index: 12;
-    background: linear-gradient(180deg, rgba(100,160,255,0.1), rgba(100,160,255,0.05), rgba(100,160,255,0.1));
+  /* Auto-scale */
+  @media screen {
+    .container {
+      transform: scale(var(--scale, 1));
+    }
   }
 </style>
 </head>
 <body>
-
+<div class="container" id="container">
   <div class="bg"></div>
   <div class="scanlines"></div>
-  <div class="side-accent"></div>
-  <div class="side-accent-r"></div>
+  <div class="side-l"></div>
+  <div class="side-r"></div>
 
-  <!-- Top Chrome Bar -->
-  <div class="top-chrome">
+  <div class="top-bar">
     <div class="logo">
       <span class="logo-num">6529</span>
       <span class="logo-news">NEWS</span>
@@ -748,32 +336,21 @@
     </div>
     <div class="top-right">
       <a href="https://sertx92.github.io/memes24h/governance/" target="_blank" class="gov-btn">GOV</a>
-      <div class="live-indicator">
-        <div class="live-dot"></div>
-        <span class="live-text">LIVE</span>
-      </div>
+      <div class="live-indicator"><div class="live-dot"></div><span class="live-text">LIVE</span></div>
       <span class="clock" id="clock">--:--:--</span>
       <span class="date-display" id="dateDisplay"></span>
     </div>
   </div>
 
-  <!-- Category Tab Bar -->
   <div class="cat-bar">
-    <span class="cat-tab active" id="catTab">BREAKING</span>
-    <span class="cat-counter" id="screenCounter">01/04</span>
+    <span class="cat-tab" id="catTab">BREAKING</span>
+    <span class="cat-counter" id="screenCounter">01/06</span>
   </div>
 
-  <!-- Main News Area -->
-  <div class="news-area" id="newsStage">
-    <!-- Cards injected by JS -->
-  </div>
+  <div class="news-area" id="newsStage"></div>
 
-  <!-- Progress -->
-  <div class="progress-bar">
-    <div class="progress-fill" id="progressFill"></div>
-  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
-  <!-- Headline Bar -->
   <div class="headline-bar">
     <div class="headline-label">NEWS</div>
     <div class="headline-content">
@@ -785,7 +362,6 @@
     </div>
   </div>
 
-  <!-- Ticker -->
   <div class="ticker-bar">
     <div class="ticker-label">MARKET</div>
     <div class="ticker-track">
@@ -797,7 +373,6 @@
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #2</span><span class="ticker-item-value">awhurst 556K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #3</span><span class="ticker-item-value">blake69 301K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-brand"><span class="ticker-brand-badge">6529</span><span class="ticker-brand-text">Decentralized News</span></div><div class="ticker-separator">|</div>
-        <!-- duplicate for loop -->
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #1</span><span class="ticker-item-value">dangiuz 98.6M</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #2</span><span class="ticker-item-value">BrynnAlise 4.0M</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #3</span><span class="ticker-item-value">MintFace 630K</span></div><div class="ticker-separator">|</div>
@@ -808,239 +383,187 @@
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    // === NEWS DATA (loaded dynamically, fallback hardcoded) ===
-    const NEWS_URL = 'https://raw.githubusercontent.com/sertx92/memes24h/main/data/news-latest.json';
-    const NEWS_FALLBACK = [
-      {
-        category: "MAIN STAGE TOP 3",
-        headline: "#1 dangiuz Leads with 98.6M TDH",
-        summary: '#1 "Cogito, ergo sum" by dangiuz (98.6M TDH, 59 voters) | #17 "Network for Good" by BrynnAlise (4.0M TDH, 23 voters) | #51 "Farmacy" by MintFace (630K TDH, 2 voters)',
-        source: "The Memes - Main Stage",
-        link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
-        image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_9d8defd4-e381-42f7-b387-b9db2852ff7f/392a10e2-c774-4ab4-a1d4-3aed12b1ed27.jpg", label: "#1 Cogito, ergo sum - dangiuz"},
-        dataBoxes: [{label: "#1 dangiuz", value: "98.6M", sub: "TDH (59 votes)"}, {label: "#17 BrynnAlise", value: "4.0M", sub: "TDH (23 votes)"}, {label: "#51 MintFace", value: "630K", sub: "TDH (2 votes)"}]
-      },
-      {
-        category: "SUPERRARE TOP 3",
-        headline: "#1 Kostas_Photo Leads with 765K TDH",
-        summary: '#1 Kostas_Photo (765K TDH, 7 voters) | #2 awhurst (556K TDH, 11 voters) | #3 blake69 - WAGMI (301K TDH, 7 voters)',
-        source: "SuperRare x 6529",
-        link: "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd",
-        image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_5b7ea9c6-2ca3-48a3-a5ee-79a7cc7ce359/b54609c2-b0de-42e5-9916-523036e874d4.JPG", label: "#1 Kostas_Photo"},
-        dataBoxes: [{label: "#1 Kostas_Photo", value: "765K", sub: "TDH (7 votes)"}, {label: "#2 awhurst", value: "556K", sub: "TDH (11 votes)"}, {label: "#3 blake69", value: "301K", sub: "TDH (7 votes)"}]
-      },
-      {
-        category: "COMMUNITY",
-        headline: "6529 Veteran Describes TDH Millionaire Paradox",
-        summary: 'Blocknoob in the dive bar: "Being a TDH multi-millionaire translates to zero value outside of the community." His wife walked out after the explanation.',
-        source: "maybe's dive bar",
-        link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
-        image: null, dataBoxes: null
-      },
-      {
-        category: "MARKET",
-        headline: "TDH Price Discussions Heat Up in the Dive Bar",
-        summary: 'Users expressed disbelief at TDH valuation. dangiuz commented: "100M TDH? you guys are crazy." Growing discussion around perceived value within the 6529 community.',
-        source: "maybe's dive bar",
-        link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
-        image: null, dataBoxes: null
-      },
-      {
-        category: "ART",
-        headline: "Artists Express Gratitude for Votes and REP on Main Stage",
-        summary: 'Multiple artists thanked voters for support. Minotaur_Man: "Many thanks for the REP." Community engagement and recognition continue to drive the 6529 art scene.',
-        source: "The Memes - Main Stage",
-        link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
-        image: null, dataBoxes: null
-      },
-      {
-        category: "ART",
-        headline: "Longexposure Shares Atmospheric Artwork on Main Stage",
-        summary: 'Artist longexposure posted a piece depicting a lone caravan in a desolate landscape, described as a "testament to resilience" emphasizing themes of isolation and perseverance.',
-        source: "The Memes - Main Stage",
-        link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
-        image: null, dataBoxes: null
+<script>
+  // Auto-scale container to viewport
+  function scaleContainer() {
+    const c = document.getElementById('container');
+    const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1080);
+    c.style.setProperty('--scale', s);
+    c.style.transform = `scale(${s})`;
+  }
+  window.addEventListener('resize', scaleContainer);
+  scaleContainer();
+
+  // === NEWS DATA ===
+  const NEWS_URL = 'https://raw.githubusercontent.com/sertx92/memes24h/main/data/news-latest.json';
+  const NEWS_FALLBACK = [
+    {
+      category: "MAIN STAGE TOP 3",
+      headline: "#1 dangiuz Leads with 98.6M TDH",
+      summary: '#1 "Cogito, ergo sum" by dangiuz (98.6M TDH, 59 voters) | #17 "Network for Good" by BrynnAlise (4.0M TDH, 23 voters) | #51 "Farmacy" by MintFace (630K TDH, 2 voters)',
+      source: "The Memes - Main Stage",
+      link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
+      image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_9d8defd4-e381-42f7-b387-b9db2852ff7f/392a10e2-c774-4ab4-a1d4-3aed12b1ed27.jpg", label: "#1 Cogito, ergo sum - dangiuz"},
+      dataBoxes: [{label: "#1 dangiuz", value: "98.6M", sub: "TDH (59 votes)"}, {label: "#17 BrynnAlise", value: "4.0M", sub: "TDH (23 votes)"}, {label: "#51 MintFace", value: "630K", sub: "TDH (2 votes)"}]
+    },
+    {
+      category: "SUPERRARE TOP 3",
+      headline: "#1 Kostas_Photo Leads with 765K TDH",
+      summary: '#1 Kostas_Photo (765K TDH, 7 voters) | #2 awhurst (556K TDH, 11 voters) | #3 blake69 - WAGMI (301K TDH, 7 voters)',
+      source: "SuperRare x 6529",
+      link: "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd",
+      image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_5b7ea9c6-2ca3-48a3-a5ee-79a7cc7ce359/b54609c2-b0de-42e5-9916-523036e874d4.JPG", label: "#1 Kostas_Photo"},
+      dataBoxes: [{label: "#1 Kostas_Photo", value: "765K", sub: "TDH (7 votes)"}, {label: "#2 awhurst", value: "556K", sub: "TDH (11 votes)"}, {label: "#3 blake69", value: "301K", sub: "TDH (7 votes)"}]
+    },
+    {
+      category: "COMMUNITY",
+      headline: "6529 Veteran Describes TDH Millionaire Paradox",
+      summary: 'Blocknoob in the dive bar: "Being a TDH multi-millionaire translates to zero value outside of the community." His wife walked out after the explanation.',
+      source: "maybe's dive bar",
+      link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
+      image: null, dataBoxes: null
+    },
+    {
+      category: "MARKET",
+      headline: "TDH Price Discussions Heat Up in the Dive Bar",
+      summary: 'Users expressed disbelief at TDH valuation. dangiuz commented: "100M TDH? you guys are crazy." Growing discussion around perceived value.',
+      source: "maybe's dive bar",
+      link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
+      image: null, dataBoxes: null
+    },
+    {
+      category: "ART",
+      headline: "Artists Express Gratitude for Votes and REP on Main Stage",
+      summary: 'Multiple artists thanked voters for support. Minotaur_Man: "Many thanks for the REP." Community engagement continues to drive the 6529 art scene.',
+      source: "The Memes - Main Stage",
+      link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
+      image: null, dataBoxes: null
+    },
+    {
+      category: "ART",
+      headline: "Longexposure Shares Atmospheric Artwork on Main Stage",
+      summary: 'Artist longexposure posted a piece depicting a lone caravan in a desolate landscape, described as a "testament to resilience" emphasizing isolation and perseverance.',
+      source: "The Memes - Main Stage",
+      link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
+      image: null, dataBoxes: null
+    }
+  ];
+
+  let NEWS = [...NEWS_FALLBACK];
+  const CARD_DURATION = 8000;
+  let currentIndex = -1;
+
+  // Dynamic loader
+  async function loadDynamicNews() {
+    try {
+      const res = await fetch(NEWS_URL + '?t=' + Date.now());
+      const data = await res.json();
+      if (data.news && data.news.length > 0) {
+        NEWS = data.news;
+        document.getElementById('newsStage').innerHTML = '';
+        buildCards();
+        currentIndex = -1;
+        showCard(0);
+        resetAutoplay();
+        if (data.ticker && data.ticker.length > 0) updateTickerFromData(data.ticker);
       }
-    ];
+    } catch (e) { console.log('Using fallback:', e.message); }
+  }
 
-    let NEWS = [...NEWS_FALLBACK];
-    const CARD_DURATION = 8000;
-    let currentIndex = -1;
+  function updateTickerFromData(items) {
+    const el = document.getElementById('tickerContent');
+    if (!el) return;
+    const html = items.map(t => {
+      let cls = '';
+      const lbl = (t.label || '').toLowerCase();
+      if (lbl.includes('memes') || lbl.includes('meme')) cls = 'ticker-memes';
+      else if (lbl.includes('sr') || lbl.includes('super') || lbl.includes('rare')) cls = 'ticker-sr';
+      else if (lbl.includes('floor') || lbl.includes('vol') || lbl.includes('market') || lbl.includes('pebble')) cls = 'ticker-market';
+      return `<div class="ticker-item ${cls}"><span class="ticker-item-label">${t.label}</span><span class="ticker-item-value">${t.value}</span></div><div class="ticker-separator">|</div>`;
+    }).join('');
+    el.innerHTML = html + html;
+    el.style.animation = 'none'; el.offsetHeight;
+    el.style.animation = `tickerScroll ${Math.max(40, items.length * 5)}s linear infinite`;
+  }
 
-    // === DYNAMIC NEWS LOADER ===
-    async function loadDynamicNews() {
-      try {
-        const res = await fetch(NEWS_URL + '?t=' + Date.now());
-        const data = await res.json();
-        if (data.news && data.news.length > 0) {
-          NEWS = data.news;
-          const stage = document.getElementById('newsStage');
-          stage.innerHTML = '';
-          buildCards();
-          currentIndex = -1;
-          showCard(0);
-          resetAutoplay();
-          if (data.ticker && data.ticker.length > 0) {
-            updateTickerFromData(data.ticker);
-          }
-          console.log(`Loaded ${NEWS.length} news from AI (${data.generated_at})`);
-        }
-      } catch (e) {
-        console.log('Using fallback news:', e.message);
-      }
-    }
+  // Clock
+  function updateTime() {
+    const n = new Date();
+    document.getElementById('clock').textContent =
+      String(n.getUTCHours()).padStart(2,'0') + ':' + String(n.getUTCMinutes()).padStart(2,'0') + ':' + String(n.getUTCSeconds()).padStart(2,'0');
+  }
+  setInterval(updateTime, 1000); updateTime();
+  document.getElementById('dateDisplay').textContent =
+    new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}).toUpperCase();
 
-    function updateTickerFromData(tickerItems) {
-      const el = document.getElementById('tickerContent');
-      if (!el) return;
-      const html = tickerItems.map(t => {
-        // Auto-detect color class from label
-        let cls = '';
-        const lbl = (t.label || '').toLowerCase();
-        if (lbl.includes('memes') || lbl.includes('meme')) cls = 'ticker-memes';
-        else if (lbl.includes('sr') || lbl.includes('super') || lbl.includes('rare')) cls = 'ticker-sr';
-        else if (lbl.includes('floor') || lbl.includes('vol') || lbl.includes('market') || lbl.includes('pebble')) cls = 'ticker-market';
-        return `<div class="ticker-item ${cls}"><span class="ticker-item-label">${t.label}</span><span class="ticker-item-value">${t.value}</span></div><div class="ticker-separator">|</div>`;
-      }).join('');
-      el.innerHTML = html + html;
-      el.style.animation = 'none';
-      el.offsetHeight;
-      const duration = Math.max(40, tickerItems.length * 5);
-      el.style.animation = `tickerScroll ${duration}s linear infinite`;
-    }
+  // Build cards
+  function buildCards() {
+    const stage = document.getElementById('newsStage');
+    NEWS.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'news-card'; card.id = `card-${i}`;
 
-    // === CLOCK ===
-    function updateTime() {
-      const now = new Date();
-      const h = String(now.getUTCHours()).padStart(2, '0');
-      const m = String(now.getUTCMinutes()).padStart(2, '0');
-      const s = String(now.getUTCSeconds()).padStart(2, '0');
-      document.getElementById('clock').textContent = `${h}:${m}:${s}`;
-    }
-    setInterval(updateTime, 1000);
-    updateTime();
-
-    const now = new Date();
-    document.getElementById('dateDisplay').textContent =
-      now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-
-    // === BUILD CARDS ===
-    function buildCards() {
-      const stage = document.getElementById('newsStage');
-      NEWS.forEach((item, i) => {
-        const card = document.createElement('div');
-        card.className = 'news-card';
-        card.id = `card-${i}`;
-
-        let dataHTML = '';
-        if (item.dataBoxes) {
-          dataHTML = '<div class="card-data">' +
-            item.dataBoxes.map(d =>
-              `<div class="data-box">
-                <div class="data-label">${d.label}</div>
-                <div class="data-value">${d.value}</div>
-                <div class="data-sub">${d.sub}</div>
-              </div>`
-            ).join('') + '</div>';
-        }
-
-        let imageHTML = '';
-        if (item.image) {
-          imageHTML = `
-            <div class="card-preview">
-              <img src="${item.image.url}" alt="${item.image.label}">
-              <div class="card-preview-label">${item.image.label}</div>
-            </div>`;
-        }
-
-        const linkHTML = item.link
-          ? `<a href="${item.link}" target="_blank" class="source-link">View &rarr;</a>` : '';
-
-        card.innerHTML = `
-          <div class="card-cat-bar">
-            <div class="card-cat">${item.category}</div>
-            <div class="card-cat-line"></div>
-          </div>
-          <div class="card-body">
-            <div class="card-text">
-              <div class="card-headline">${item.headline}</div>
-              <div class="card-divider"></div>
-              <div class="card-summary">${item.summary}</div>
-              ${dataHTML}
-              <div class="card-source">
-                <div class="source-dot"></div>
-                <div class="source-text">${item.source || ''}</div>
-                ${linkHTML}
-              </div>
-            </div>
-            ${imageHTML}
-          </div>
-        `;
-        stage.appendChild(card);
-      });
-    }
-    buildCards();
-
-    // === SLIDESHOW ===
-    let autoTimer = null;
-
-    function showCard(index) {
-      if (currentIndex >= 0) {
-        const prev = document.getElementById(`card-${currentIndex}`);
-        prev.classList.remove('active');
-        prev.classList.add('exit');
+      let dataHTML = '';
+      if (item.dataBoxes && item.dataBoxes.length) {
+        dataHTML = '<div class="card-data">' + item.dataBoxes.map(d =>
+          `<div class="data-box"><div class="data-label">${d.label}</div><div class="data-value">${d.value}</div><div class="data-sub">${d.sub}</div></div>`
+        ).join('') + '</div>';
       }
 
-      currentIndex = ((index % NEWS.length) + NEWS.length) % NEWS.length;
-      const card = document.getElementById(`card-${currentIndex}`);
+      let imageHTML = '';
+      if (item.image) {
+        imageHTML = `<div class="card-preview"><img src="${item.image.url}" alt="${item.image.label || ''}"><div class="card-preview-label">${item.image.label || ''}</div></div>`;
+      }
 
-      setTimeout(() => {
-        document.querySelectorAll('.news-card.exit').forEach(c => c.classList.remove('exit'));
-        card.classList.add('active');
+      const linkHTML = item.link ? `<a href="${item.link}" target="_blank" class="source-link">View &rarr;</a>` : '';
 
-        document.getElementById('headlineText').textContent = NEWS[currentIndex].headline.toUpperCase();
-        document.getElementById('screenCounter').textContent =
-          `${String(currentIndex + 1).padStart(2, '0')}/${String(NEWS.length).padStart(2, '0')}`;
-
-        // Update category tab
-        document.getElementById('catTab').textContent = NEWS[currentIndex].category;
-
-        // Progress bar
-        const fill = document.getElementById('progressFill');
-        fill.style.transition = 'none';
-        fill.style.width = '0%';
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            fill.style.transition = `width ${CARD_DURATION}ms linear`;
-            fill.style.width = '100%';
-          });
-        });
-      }, 150);
-    }
-
-    function resetAutoplay() {
-      clearInterval(autoTimer);
-      autoTimer = setInterval(() => showCard(currentIndex + 1), CARD_DURATION);
-    }
-
-    document.getElementById('navPrev').addEventListener('click', () => {
-      showCard(currentIndex - 1);
-      resetAutoplay();
+      card.innerHTML = `
+        <div class="card-cat-bar"><div class="card-cat">${item.category}</div><div class="card-cat-line"></div></div>
+        <div class="card-body">
+          ${imageHTML}
+          <div class="card-headline">${item.headline}</div>
+          <div class="card-divider"></div>
+          <div class="card-summary">${item.summary}</div>
+          <div class="card-source"><div class="source-dot"></div><div class="source-text">${item.source || ''}</div>${linkHTML}</div>
+          ${dataHTML}
+        </div>
+      `;
+      stage.appendChild(card);
     });
-    document.getElementById('navNext').addEventListener('click', () => {
-      showCard(currentIndex + 1);
-      resetAutoplay();
-    });
+  }
+  buildCards();
 
-    showCard(0);
-    autoTimer = setInterval(() => showCard(currentIndex + 1), CARD_DURATION);
-
-    // Load dynamic news (from pre-generated JSON, no direct API calls)
-    loadDynamicNews();
-    setInterval(loadDynamicNews, 6 * 60 * 60 * 1000);
-  </script>
-
+  // Slideshow
+  let autoTimer = null;
+  function showCard(index) {
+    if (currentIndex >= 0) {
+      const p = document.getElementById(`card-${currentIndex}`);
+      p.classList.remove('active'); p.classList.add('exit');
+    }
+    currentIndex = ((index % NEWS.length) + NEWS.length) % NEWS.length;
+    const card = document.getElementById(`card-${currentIndex}`);
+    setTimeout(() => {
+      document.querySelectorAll('.news-card.exit').forEach(c => c.classList.remove('exit'));
+      card.classList.add('active');
+      document.getElementById('headlineText').textContent = NEWS[currentIndex].headline.toUpperCase();
+      document.getElementById('screenCounter').textContent = `${String(currentIndex+1).padStart(2,'0')}/${String(NEWS.length).padStart(2,'0')}`;
+      document.getElementById('catTab').textContent = NEWS[currentIndex].category;
+      const fill = document.getElementById('progressFill');
+      fill.style.transition = 'none'; fill.style.width = '0%';
+      requestAnimationFrame(() => { requestAnimationFrame(() => {
+        fill.style.transition = `width ${CARD_DURATION}ms linear`; fill.style.width = '100%';
+      }); });
+    }, 120);
+  }
+  function resetAutoplay() { clearInterval(autoTimer); autoTimer = setInterval(() => showCard(currentIndex+1), CARD_DURATION); }
+  document.getElementById('navPrev').addEventListener('click', () => { showCard(currentIndex-1); resetAutoplay(); });
+  document.getElementById('navNext').addEventListener('click', () => { showCard(currentIndex+1); resetAutoplay(); });
+  showCard(0);
+  autoTimer = setInterval(() => showCard(currentIndex+1), CARD_DURATION);
+  loadDynamicNews();
+  setInterval(loadDynamicNews, 6*60*60*1000);
+</script>
 </body>
 </html>

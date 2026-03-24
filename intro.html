@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>6529 NEWS - Intro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1080px; height: 1080px; overflow: hidden;
+    background: #000; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Background pulse */
+  .bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 50%, #0a1428 0%, #040810 100%);
+    z-index: 0;
+  }
+
+  /* Grid that fades in */
+  .grid-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    opacity: 0;
+    background-image:
+      linear-gradient(rgba(80,140,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(80,140,255,0.04) 1px, transparent 1px);
+    background-size: 36px 36px;
+    animation: gridIn 1s 0.5s ease-out forwards;
+  }
+  @keyframes gridIn { to { opacity: 1; } }
+
+  /* Rotating globe ring */
+  .globe-ring {
+    position: absolute; z-index: 2;
+    width: 600px; height: 600px;
+    border: 1px solid rgba(80,140,255,0.08);
+    border-radius: 50%;
+    animation: globeSpin 20s linear infinite, globeIn 2s ease-out forwards;
+    opacity: 0;
+  }
+  .globe-ring:nth-child(2) { width: 500px; height: 500px; animation-duration: 25s; animation-delay: 0.3s; }
+  .globe-ring:nth-child(3) { width: 700px; height: 700px; border-style: dashed; animation-duration: 30s; animation-delay: 0.5s; border-color: rgba(80,140,255,0.04); }
+  @keyframes globeSpin { to { transform: rotate(360deg); } }
+  @keyframes globeIn { to { opacity: 1; } }
+
+  /* Scan line sweep */
+  .sweep {
+    position: absolute; inset: 0; z-index: 3;
+    background: linear-gradient(180deg, transparent 0%, rgba(80,140,255,0.06) 50%, transparent 100%);
+    background-size: 100% 200%;
+    animation: sweepDown 3s 1s ease-in-out infinite;
+  }
+  @keyframes sweepDown {
+    0% { background-position: 0 -100%; }
+    100% { background-position: 0 200%; }
+  }
+
+  /* Center content */
+  .center { position: relative; z-index: 10; text-align: center; }
+
+  /* Red line that draws across */
+  .red-line {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 0; height: 4px;
+    background: #cc2200;
+    z-index: 5;
+    animation: lineGrow 0.8s 1.5s ease-out forwards;
+    box-shadow: 0 0 20px rgba(204,34,0,0.4);
+  }
+  @keyframes lineGrow { to { width: 800px; } }
+
+  /* Logo animation */
+  .logo-group {
+    display: flex; align-items: center; justify-content: center; gap: 0;
+    opacity: 0;
+    animation: logoIn 0.6s 2s ease-out forwards;
+    transform: scale(0.8);
+  }
+  @keyframes logoIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .logo-6529 {
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 120px;
+    color: #fff; background: linear-gradient(180deg, #cc2200, #991100);
+    padding: 0 24px; line-height: 0.9;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.3), inset 0 4px 0 rgba(255,255,255,0.1),
+                0 0 40px rgba(204,34,0,0.3);
+    letter-spacing: 2px;
+  }
+
+  .logo-news-text {
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 120px;
+    color: #fff; letter-spacing: 8px; margin-left: 16px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 40px rgba(80,140,255,0.1);
+  }
+
+  /* Subtitle */
+  .subtitle {
+    font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 22px;
+    color: rgba(255,255,255,0.4); letter-spacing: 12px; text-transform: uppercase;
+    margin-top: 16px; opacity: 0;
+    animation: subIn 0.8s 2.5s ease-out forwards;
+  }
+  @keyframes subIn { to { opacity: 1; } }
+
+  /* 24H badge */
+  .badge-24h {
+    display: inline-block;
+    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 28px;
+    color: #ffcc00; background: rgba(0,0,0,0.5);
+    padding: 2px 16px; margin-top: 20px;
+    border: 1px solid rgba(255,204,0,0.3);
+    letter-spacing: 4px; opacity: 0;
+    animation: subIn 0.6s 3s ease-out forwards;
+  }
+
+  /* Checkmark from Card #103 style */
+  .check-icon {
+    position: absolute; z-index: 4;
+    width: 200px; height: 200px;
+    opacity: 0;
+    animation: checkIn 0.5s 1s ease-out forwards;
+  }
+  @keyframes checkIn {
+    from { opacity: 0; transform: scale(2); }
+    to { opacity: 0.04; transform: scale(1); }
+  }
+
+  .check-icon svg {
+    width: 100%; height: 100%;
+    fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 2;
+  }
+
+  /* Flash effect on logo appear */
+  .flash {
+    position: absolute; inset: 0; z-index: 20;
+    background: rgba(255,255,255,0.8);
+    opacity: 0; pointer-events: none;
+    animation: flashBang 0.3s 2s ease-out forwards;
+  }
+  @keyframes flashBang {
+    0% { opacity: 0.6; }
+    100% { opacity: 0; }
+  }
+
+  /* Bottom bar preview */
+  .bottom-preview {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 130px; z-index: 15; opacity: 0;
+    animation: barIn 0.5s 3.5s ease-out forwards;
+  }
+  @keyframes barIn { to { opacity: 1; } }
+
+  .bp-headline {
+    height: 66px; background: linear-gradient(180deg, #142040, #0e1830);
+    border-top: 4px solid #cc2200;
+    display: flex; align-items: center; padding: 0 24px;
+  }
+  .bp-label {
+    background: linear-gradient(180deg, #cc2200, #991100);
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 28px;
+    color: #fff; padding: 0 20px; height: 100%; display: flex; align-items: center;
+    letter-spacing: 4px;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1);
+  }
+  .bp-text {
+    font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 20px;
+    color: #fff; letter-spacing: 2px; text-transform: uppercase; margin-left: 20px;
+    animation: typewriter 2s 4s steps(30) forwards;
+    overflow: hidden; white-space: nowrap; width: 0;
+  }
+  @keyframes typewriter { to { width: 600px; } }
+
+  .bp-ticker {
+    height: 64px; background: linear-gradient(180deg, #0a1428, #060e1e);
+    border-top: 1px solid rgba(80,140,255,0.06);
+    display: flex; align-items: center; padding: 0 24px;
+  }
+  .bp-ticker-label {
+    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 18px;
+    color: #ffcc00; letter-spacing: 2px; margin-right: 20px;
+  }
+  .bp-ticker-scroll {
+    font-family: 'Oswald', sans-serif; font-size: 14px; color: rgba(255,255,255,0.3);
+    letter-spacing: 2px; text-transform: uppercase;
+    animation: tickerSlide 15s 4s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes tickerSlide {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-200%); }
+  }
+
+  /* CRT scanlines */
+  .scanlines {
+    position: absolute; inset: 0; z-index: 50; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid-overlay"></div>
+  <div class="globe-ring"></div>
+  <div class="globe-ring"></div>
+  <div class="globe-ring"></div>
+  <div class="sweep"></div>
+  <div class="red-line"></div>
+  <div class="flash"></div>
+  <div class="scanlines"></div>
+
+  <div class="check-icon">
+    <svg viewBox="0 0 100 100"><polyline points="20,55 40,75 80,25"/></svg>
+  </div>
+
+  <div class="center">
+    <div class="logo-group">
+      <span class="logo-6529">6529</span>
+      <span class="logo-news-text">NEWS</span>
+    </div>
+    <div class="subtitle">Decentralized News Network</div>
+    <div class="badge-24h">24H LIVE</div>
+  </div>
+
+  <div class="bottom-preview">
+    <div class="bp-headline">
+      <div class="bp-label">NEWS</div>
+      <div class="bp-text">BREAKING: DECENTRALIZED NEWS POWERED BY TDH GOVERNANCE</div>
+    </div>
+    <div class="bp-ticker">
+      <span class="bp-ticker-label">MARKET</span>
+      <span class="bp-ticker-scroll">MEMES #1 dangiuz 98.6M TDH | SR #1 Kostas_Photo 765K TDH | 6529 DECENTRALIZED NEWS NETWORK</span>
+    </div>
+  </div>
+</body>
+</html>
