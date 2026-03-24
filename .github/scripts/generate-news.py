@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 MEMES 24H - AI News Generator
-Fetches data from 6529 API and OpenSea, generates news via AI (OpenRouter),
-and updates the news JSON for the HTML card.
+Always includes: Market Recap, Top 3 Memes, Top 3 SuperRare
+Then adds up to 10 additional AI-generated news.
+Filters out low-activity waves (<3 msgs in 6h).
 """
 
 import json
@@ -17,13 +18,16 @@ OPENSEA_KEY = os.environ.get('OPENSEA_KEY', '0763c7f2c4104d288f734c0f91602913')
 AI_MODEL = 'google/gemma-3-27b-it:free'
 GIST_ID = os.environ.get('GIST_ID', '1b84f8b762cd2f6640ed7086cc9b7c69')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+MIN_MSGS_6H = 3  # Minimum messages in 6 hours to be newsworthy
 
-# Load waves config
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'waves-config.json')
+MEMES_WAVE_ID = 'b6128077-ea78-4dd9-b381-52c4eadb2077'
+SR_WAVE_ID = 'd22e3046-a00e-48b9-b245-a339a44c37cd'
+
+CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data', 'waves-config.json')
+
 
 # === API HELPERS ===
 def fetch_json(url, headers=None):
-    """Fetch JSON from URL with optional headers."""
     req = urllib.request.Request(url)
     if headers:
         for k, v in headers.items():
@@ -32,204 +36,276 @@ def fetch_json(url, headers=None):
         with urllib.request.urlopen(req, timeout=15) as r:
             return json.loads(r.read())
     except Exception as e:
-        print(f"  Fetch error {url[:60]}: {e}")
+        print(f"  Fetch error: {e}")
         return None
 
 
 def fetch_6529_drops(wave_id, limit=20):
-    """Fetch latest drops from a 6529 wave."""
-    url = f'https://api.6529.io/api/drops?wave_id={wave_id}&limit={limit}'
-    return fetch_json(url) or []
+    return fetch_json(f'https://api.6529.io/api/drops?wave_id={wave_id}&limit={limit}') or []
 
 
-def fetch_6529_submissions(wave_id, pages=10):
-    """Fetch ranked submissions from a 6529 wave."""
+def fetch_ranked_submissions(wave_id, pages=30):
+    """Fetch top ranked submissions from a wave."""
     all_ranked = []
     sn = 999999
     for _ in range(pages):
-        url = f'https://api.6529.io/api/drops?wave_id={wave_id}&drop_type=PARTICIPATION&limit=20&serial_no_less_than={sn}'
-        data = fetch_json(url)
+        data = fetch_json(f'https://api.6529.io/api/drops?wave_id={wave_id}&drop_type=PARTICIPATION&limit=20&serial_no_less_than={sn}')
         if not data:
             break
         for d in data:
-            if d.get('rank') is not None and d['rank'] <= 20:
+            if d.get('rank') is not None:
+                media = d['parts'][0].get('media', []) if d.get('parts') else []
                 all_ranked.append({
                     'rank': d['rank'],
-                    'title': d.get('title', 'Untitled'),
+                    'title': d.get('title') or (d['parts'][0].get('content', '')[:40] if d.get('parts') else 'Untitled'),
                     'author': d['author']['handle'],
                     'tdh': d.get('realtime_rating', 0),
                     'voters': d.get('raters_count', 0),
-                    'img': d['parts'][0]['media'][0]['url'] if d['parts'][0].get('media') else None,
-                    'drop_id': d['id']
+                    'img': media[0]['url'] if media else None,
+                    'drop_id': d['id'],
+                    'wave_id': wave_id
                 })
         sn = data[-1]['serial_no']
         if len(all_ranked) >= 10:
             break
+
+    # Deduplicate and sort by rank
     all_ranked.sort(key=lambda x: x['rank'])
-    # Deduplicate by title
     seen = set()
     unique = []
     for d in all_ranked:
-        if d['title'] not in seen:
-            seen.add(d['title'])
+        key = f"{d['rank']}-{d['author']}"
+        if key not in seen:
+            seen.add(key)
             unique.append(d)
     return unique
 
 
 def fetch_opensea_stats(slug):
-    """Fetch collection stats from OpenSea."""
-    url = f'https://api.opensea.io/api/v2/collections/{slug}/stats'
-    return fetch_json(url, {'X-API-KEY': OPENSEA_KEY})
+    return fetch_json(f'https://api.opensea.io/api/v2/collections/{slug}/stats', {'X-API-KEY': OPENSEA_KEY})
 
 
-def fetch_opensea_sales(slug, limit=20):
-    """Fetch recent sales from OpenSea."""
-    url = f'https://api.opensea.io/api/v2/events/collection/{slug}?event_type=sale&limit={limit}'
-    return fetch_json(url, {'X-API-KEY': OPENSEA_KEY})
+def fetch_opensea_sales(slug, limit=30):
+    return fetch_json(f'https://api.opensea.io/api/v2/events/collection/{slug}?event_type=sale&limit={limit}', {'X-API-KEY': OPENSEA_KEY})
 
 
-# === DATA GATHERING ===
-def gather_wave_data(waves):
-    """Gather chat activity from waves."""
+def format_tdh(tdh):
+    if tdh >= 1_000_000:
+        return f"{tdh / 1_000_000:.1f}M"
+    if tdh >= 1_000:
+        return f"{tdh / 1_000:.0f}K"
+    return str(tdh)
+
+
+# =============================================
+# FIXED NEWS: Always generated (no AI needed)
+# =============================================
+
+def build_market_recap(collections):
+    """FIXED: Market recap with sales, floor, volume, whales."""
+    print("Building market recap...")
+    news = []
+
+    all_sales_text = []
+    all_data_boxes = []
+    all_whales = []
+
+    for c in collections:
+        stats = fetch_opensea_stats(c['slug'])
+        if not stats:
+            continue
+
+        floor = stats['total'].get('floor_price', 0)
+        floor_sym = stats['total'].get('floor_price_symbol', 'ETH')
+        holders = stats['total'].get('num_owners', 0)
+        vol_24h = stats['intervals'][0].get('volume', 0) if stats.get('intervals') else 0
+        sales_24h = stats['intervals'][0].get('sales', 0) if stats.get('intervals') else 0
+        vol_7d = stats['intervals'][1].get('volume', 0) if stats.get('intervals') and len(stats['intervals']) > 1 else 0
+
+        all_data_boxes.append({'label': f"{c['name']} Floor", 'value': str(floor), 'sub': floor_sym})
+        if sales_24h > 0:
+            all_data_boxes.append({'label': f"{c['name']} 24h", 'value': f"{vol_24h:.2f}", 'sub': f'ETH ({sales_24h} sales)'})
+            all_sales_text.append(f"{c['name']}: {sales_24h} sales, {vol_24h:.2f} ETH volume, floor {floor} {floor_sym}")
+        else:
+            all_sales_text.append(f"{c['name']}: no sales in 24h, floor {floor} {floor_sym}")
+
+        # Whale detection
+        sales_data = fetch_opensea_sales(c['slug'], 50)
+        if sales_data and 'asset_events' in sales_data:
+            buyers = {}
+            notable_sales = []
+            for e in sales_data['asset_events']:
+                price = int(e['payment']['quantity']) / 1e18
+                buyer = e['buyer']
+                name = e['nft']['name']
+                if price >= 0.1:  # Notable sale threshold
+                    notable_sales.append(f'"{name}" for {price:.3f} ETH')
+                if buyer not in buyers:
+                    buyers[buyer] = {'count': 0, 'spent': 0, 'last': ''}
+                buyers[buyer]['count'] += 1
+                buyers[buyer]['spent'] += price
+                if not buyers[buyer]['last']:
+                    buyers[buyer]['last'] = name
+
+            for addr, info in buyers.items():
+                if info['count'] >= 3:
+                    short = addr[:6] + '...' + addr[-4:]
+                    all_whales.append({
+                        'address': short,
+                        'count': info['count'],
+                        'spent': info['spent'],
+                        'last': info['last'],
+                        'collection': c['name']
+                    })
+
+            if notable_sales:
+                all_sales_text.append(f"Notable: {', '.join(notable_sales[:3])}")
+
+    # Build market recap card
+    summary = ' | '.join(all_sales_text[:4])
+    news.append({
+        'category': 'MARKET RECAP',
+        'headline': 'Daily Market Overview',
+        'summary': summary,
+        'source': 'OpenSea',
+        'link': 'https://opensea.io/collection/thememes6529',
+        'image': None,
+        'dataBoxes': all_data_boxes[:4]
+    })
+
+    # Whale alerts (if any)
+    all_whales.sort(key=lambda x: x['count'], reverse=True)
+    for whale in all_whales[:2]:
+        news.append({
+            'category': 'WHALE ALERT',
+            'headline': f"Whale {whale['address']} Buys {whale['count']} {whale['collection']}",
+            'summary': f"Total spent: {whale['spent']:.3f} ETH. Last purchase: \"{whale['last']}\".",
+            'source': 'OpenSea',
+            'link': f'https://opensea.io/collection/thememes6529',
+            'image': None,
+            'dataBoxes': None
+        })
+
+    return news
+
+
+def build_top3_leaderboard(wave_id, wave_name, category):
+    """FIXED: Top 3 leaderboard for a voting wave."""
+    print(f"Building top 3: {wave_name}...")
+    subs = fetch_ranked_submissions(wave_id, pages=30)
+    top3 = subs[:3]
+
+    if not top3:
+        return []
+
+    summary_parts = []
+    data_boxes = []
+    for s in top3:
+        summary_parts.append(f"#{s['rank']} \"{s['title']}\" by {s['author']} ({format_tdh(s['tdh'])} TDH, {s['voters']} voters)")
+        data_boxes.append({
+            'label': f"#{s['rank']} {s['author']}",
+            'value': format_tdh(s['tdh']),
+            'sub': f"TDH ({s['voters']} votes)"
+        })
+
+    # Use #1's image if available
+    image = None
+    if top3[0].get('img'):
+        image = {'url': top3[0]['img'], 'label': f"#{top3[0]['rank']} {top3[0]['title']} - {top3[0]['author']}"}
+
+    return [{
+        'category': category,
+        'headline': f"#{top3[0]['rank']} {top3[0]['author']} Leads with {format_tdh(top3[0]['tdh'])} TDH",
+        'summary': ' | '.join(summary_parts),
+        'source': wave_name,
+        'link': f'https://6529.io/waves/{wave_id}',
+        'image': image,
+        'dataBoxes': data_boxes[:4]
+    }]
+
+
+# =============================================
+# VARIABLE NEWS: AI-generated from wave activity
+# =============================================
+
+def gather_significant_wave_data(waves):
+    """Only gather waves with significant activity (>= MIN_MSGS_6H in 6 hours)."""
     wave_data = []
+    six_hours_ago = (datetime.now(timezone.utc) - timedelta(hours=6)).timestamp() * 1000
+
     for w in waves:
-        print(f"Fetching wave: {w['name']}")
         drops = fetch_6529_drops(w['id'], 20)
         if not drops:
             continue
 
-        now = datetime.now(timezone.utc).timestamp() * 1000
-        recent_1h = [d for d in drops if d['created_at'] > now - 3600000]
+        # Count messages in last 6 hours
+        recent = [d for d in drops if d['created_at'] > six_hours_ago]
+
+        if len(recent) < MIN_MSGS_6H:
+            print(f"  Skipping {w['name']}: only {len(recent)} msgs in 6h (min {MIN_MSGS_6H})")
+            continue
 
         messages = []
-        for d in drops[:10]:
+        for d in recent[:10]:
             parts = d.get('parts', [])
             content = (parts[0].get('content') or '')[:200] if parts else ''
             author = d.get('author', {}).get('handle', '?')
             if content:
                 messages.append(f"{author}: {content}")
 
+        # Unique participants
+        authors = list(set(d.get('author', {}).get('handle', '?') for d in recent))
+
         wave_data.append({
             'name': w['name'],
             'type': w.get('type', 'chat'),
-            'message_count_1h': len(recent_1h),
-            'total_messages': len(drops),
+            'msgs_6h': len(recent),
+            'participants': authors[:10],
             'sample_messages': messages[:5],
             'wave_id': w['id']
         })
+
     return wave_data
 
 
-def gather_submission_data(waves):
-    """Gather submission/vote data from voting waves."""
-    all_subs = []
-    for w in waves:
-        if w.get('type') != 'votes':
-            continue
-        print(f"Fetching submissions: {w['name']}")
-        subs = fetch_6529_submissions(w['id'], pages=20)
-        for s in subs:
-            s['wave_name'] = w['name']
-            s['wave_id'] = w['id']
-        all_subs.extend(subs)
-    return all_subs
+def generate_additional_news_ai(wave_data, max_news=7):
+    """Use AI to generate additional news from wave activity."""
+    if not OPENROUTER_KEY or not wave_data:
+        return generate_additional_fallback(wave_data)
 
-
-def gather_market_data(collections):
-    """Gather market data from OpenSea."""
-    market = []
-    for c in collections:
-        print(f"Fetching market: {c['name']}")
-        stats = fetch_opensea_stats(c['slug'])
-        if not stats:
-            continue
-
-        sales_data = fetch_opensea_sales(c['slug'], 30)
-        recent_sales = []
-        whale_buyers = {}
-
-        if sales_data and 'asset_events' in sales_data:
-            for e in sales_data['asset_events']:
-                price = int(e['payment']['quantity']) / 1e18
-                buyer = e['buyer']
-                name = e['nft']['name']
-                recent_sales.append({'name': name, 'price': price, 'buyer': buyer[:10]})
-
-                if buyer not in whale_buyers:
-                    whale_buyers[buyer] = {'count': 0, 'spent': 0, 'last': ''}
-                whale_buyers[buyer]['count'] += 1
-                whale_buyers[buyer]['spent'] += price
-                whale_buyers[buyer]['last'] = name
-
-        # Find whales (3+ buys)
-        whales = [
-            {'address': addr[:8] + '...' + addr[-4:], **info}
-            for addr, info in whale_buyers.items()
-            if info['count'] >= 3
-        ]
-        whales.sort(key=lambda x: x['count'], reverse=True)
-
-        market.append({
-            'name': c['name'],
-            'slug': c['slug'],
-            'floor': stats['total'].get('floor_price', 0),
-            'floor_symbol': stats['total'].get('floor_price_symbol', 'ETH'),
-            'holders': stats['total'].get('num_owners', 0),
-            'volume_24h': stats['intervals'][0].get('volume', 0) if stats.get('intervals') else 0,
-            'sales_24h': stats['intervals'][0].get('sales', 0) if stats.get('intervals') else 0,
-            'volume_7d': stats['intervals'][1].get('volume', 0) if stats.get('intervals') and len(stats['intervals']) > 1 else 0,
-            'recent_sales': recent_sales[:5],
-            'whales': whales[:2]
-        })
-    return market
-
-
-# === AI NEWS GENERATION ===
-def generate_news_with_ai(wave_data, submissions, market_data):
-    """Send gathered data to AI and get news articles back."""
-    if not OPENROUTER_KEY:
-        print("No OpenRouter key, generating fallback news")
-        return generate_fallback_news(wave_data, submissions, market_data)
-
-    # Build the prompt
-    prompt = f"""You are a news anchor for MEMES 24H, a daily broadcast covering the 6529 NFT ecosystem.
+    prompt = f"""You are a news editor for MEMES 24H, a daily broadcast covering the 6529 NFT ecosystem.
 Today is {datetime.now(timezone.utc).strftime('%B %d, %Y')}.
 
-Based on the following data, generate exactly 6-8 news items in JSON format.
-Each news item must have: category, headline, summary, source, link (6529.io or opensea URL).
-For submissions with images, include image_url and image_label.
-For market news, include dataBoxes (array of {{label, value, sub}}).
+Below is significant wave/chat activity from the last 6 hours.
+Generate {min(max_news, len(wave_data) * 2)} news items highlighting the most interesting discussions, quotes, trends, and community moments.
 
-Write headlines like a professional news anchor - concise, impactful, factual.
-Highlight interesting patterns: whale activity, hot conversations, vote changes, notable sales.
+RULES:
+- Only include genuinely interesting content (notable quotes, debates, announcements, milestones)
+- Do NOT include simple "gm" or greeting messages as news
+- Attribute quotes to their authors
+- Be specific with names and details
+- Each news item must be distinct (no duplicates)
 
-=== WAVE ACTIVITY ===
-{json.dumps(wave_data, indent=2)[:3000]}
+=== WAVE ACTIVITY (last 6 hours) ===
+{json.dumps(wave_data, indent=2)[:4000]}
 
-=== TOP SUBMISSIONS (VOTES) ===
-{json.dumps(submissions[:10], indent=2)[:3000]}
-
-=== MARKET DATA ===
-{json.dumps(market_data, indent=2)[:3000]}
-
-Return ONLY a valid JSON array of news objects. No markdown, no explanation.
-Format:
+Return ONLY a valid JSON array. No markdown, no explanation.
 [
   {{
-    "category": "MARKET|MAIN STAGE|COMMUNITY|WHALE ALERT|SUPERRARE x 6529|CULTURE",
+    "category": "COMMUNITY|CULTURE|BREAKING",
     "headline": "Short punchy headline",
-    "summary": "2-3 sentence summary with specific numbers and names",
-    "source": "Source name",
-    "link": "https://...",
-    "image": {{"url": "...", "label": "..."}} or null,
-    "dataBoxes": [{{"label": "...", "value": "...", "sub": "..."}}] or null
+    "summary": "2-3 sentences with quotes and specific details",
+    "source": "Wave name",
+    "link": "https://6529.io/waves/WAVE_ID",
+    "image": null,
+    "dataBoxes": null
   }}
 ]"""
 
     body = json.dumps({
         'model': AI_MODEL,
         'messages': [{'role': 'user', 'content': prompt}],
-        'max_tokens': 3000,
+        'max_tokens': 2500,
         'temperature': 0.7
     }).encode()
 
@@ -248,158 +324,107 @@ Format:
 
         content = result['choices'][0]['message']['content']
 
-        # Extract JSON from response (handle markdown code blocks)
         if '```json' in content:
             content = content.split('```json')[1].split('```')[0]
         elif '```' in content:
             content = content.split('```')[1].split('```')[0]
 
         news = json.loads(content.strip())
-        print(f"AI generated {len(news)} news items")
-        return news
+        print(f"AI generated {len(news)} additional news items")
+        return news[:max_news]
 
     except Exception as e:
         print(f"AI generation failed: {e}")
-        return generate_fallback_news(wave_data, submissions, market_data)
+        return generate_additional_fallback(wave_data)
 
 
-def generate_fallback_news(wave_data, submissions, market_data):
-    """Generate news without AI (template-based fallback)."""
+def generate_additional_fallback(wave_data):
+    """Fallback: generate news from wave data without AI."""
     news = []
+    for w in wave_data:
+        if w['msgs_6h'] >= 10:
+            activity = 'buzzing'
+        elif w['msgs_6h'] >= 5:
+            activity = 'active'
+        else:
+            continue
 
-    # Market news
-    for m in market_data:
-        if m['sales_24h'] > 0:
-            top_sale = m['recent_sales'][0] if m['recent_sales'] else None
-            headline = f"{m['name']}: {m['sales_24h']} Sales Today, Floor at {m['floor']} {m['floor_symbol']}"
-            summary = f"24h volume: {m['volume_24h']:.2f} ETH across {m['sales_24h']} sales. {m['holders']:,} holders."
-            if top_sale:
-                summary += f' Latest sale: "{top_sale["name"]}" for {top_sale["price"]:.4f} ETH.'
-            news.append({
-                'category': 'MARKET',
-                'headline': headline,
-                'summary': summary,
-                'source': 'OpenSea',
-                'link': f"https://opensea.io/collection/{m['slug']}",
-                'image': None,
-                'dataBoxes': [
-                    {'label': 'Floor', 'value': f"{m['floor']}", 'sub': m['floor_symbol']},
-                    {'label': '24h Vol', 'value': f"{m['volume_24h']:.2f}", 'sub': 'ETH'},
-                    {'label': 'Sales', 'value': str(m['sales_24h']), 'sub': 'Today'},
-                    {'label': 'Holders', 'value': f"{m['holders']:,}", 'sub': ''}
-                ]
-            })
+        # Pick a non-trivial message
+        best_msg = ''
+        for msg in w['sample_messages']:
+            # Skip simple greetings
+            lower = msg.lower()
+            if any(g in lower for g in ['gm', 'good morning', 'hello', 'hi ']):
+                continue
+            best_msg = msg
+            break
 
-        # Whale alert
-        for whale in m.get('whales', []):
-            news.append({
-                'category': 'WHALE ALERT',
-                'headline': f"Whale {whale['address']} Buys {whale['count']} {m['name']}",
-                'summary': f"Total spent: {whale['spent']:.3f} ETH. Last purchase: \"{whale['last']}\".",
-                'source': 'OpenSea',
-                'link': f"https://opensea.io/collection/{m['slug']}",
-                'image': None,
-                'dataBoxes': None
-            })
+        if not best_msg and w['sample_messages']:
+            best_msg = w['sample_messages'][0]
 
-    # Submission news
-    if submissions:
-        top3 = submissions[:3]
+        summary = f"{w['msgs_6h']} messages in the last 6 hours with {len(w['participants'])} participants."
+        if best_msg:
+            summary += f' Latest: {best_msg[:150]}'
+
         news.append({
-            'category': 'MAIN STAGE',
-            'headline': f"#{top3[0]['rank']} {top3[0]['author']} Leads with {format_tdh(top3[0]['tdh'])} TDH",
-            'summary': ' | '.join([f"#{s['rank']} \"{s['title']}\" by {s['author']} ({format_tdh(s['tdh'])} TDH, {s['voters']} voters)" for s in top3]),
-            'source': top3[0].get('wave_name', 'Main Stage'),
-            'link': f"https://6529.io/waves/{top3[0].get('wave_id', '')}",
-            'image': {'url': top3[0]['img'], 'label': f"#{top3[0]['rank']} {top3[0]['title']}"} if top3[0].get('img') else None,
-            'dataBoxes': [{'label': f"#{s['rank']} {s['author']}", 'value': format_tdh(s['tdh']), 'sub': f"TDH ({s['voters']} votes)"} for s in top3[:4]]
+            'category': 'COMMUNITY',
+            'headline': f"{w['name']} is {activity}: {w['msgs_6h']} messages, {len(w['participants'])} participants",
+            'summary': summary,
+            'source': w['name'],
+            'link': f"https://6529.io/waves/{w['wave_id']}",
+            'image': None,
+            'dataBoxes': None
         })
 
-    # Wave activity
-    for w in wave_data:
-        if w['message_count_1h'] > 0 and w['sample_messages']:
-            msg = w['sample_messages'][0]
-            news.append({
-                'category': 'COMMUNITY',
-                'headline': f"Active Discussion in {w['name']}",
-                'summary': f"{w['message_count_1h']} messages in the last hour. Latest: {msg[:120]}",
-                'source': w['name'],
-                'link': f"https://6529.io/waves/{w['wave_id']}",
-                'image': None,
-                'dataBoxes': None
-            })
-
-    return news[:8]
+    return news[:5]
 
 
-def format_tdh(tdh):
-    if tdh >= 1_000_000:
-        return f"{tdh/1_000_000:.1f}M"
-    if tdh >= 1_000:
-        return f"{tdh/1_000:.0f}K"
-    return str(tdh)
+# =============================================
+# OUTPUT
+# =============================================
 
+def build_output(fixed_news, variable_news, market_data_raw):
+    """Combine fixed + variable news, build ticker."""
+    all_news = fixed_news + variable_news
+    all_news = all_news[:13]  # Cap at 13 (3 fixed + 10 variable max)
 
-# === OUTPUT ===
-def build_output(news, market_data):
-    """Build the final JSON that the HTML card reads."""
-    # Ticker data
     ticker = []
-    for m in market_data:
-        ticker.append({'label': f"{m['name']} Floor", 'value': f"{m['floor']} {m['floor_symbol']}"})
-        if m['volume_24h'] > 0:
-            ticker.append({'label': f"{m['name']} 24h", 'value': f"{m['volume_24h']:.2f} ETH"})
+    for m in market_data_raw:
+        ticker.append({'label': f"{m['name']} Floor", 'value': f"{m.get('floor', '?')} {m.get('floor_sym', 'ETH')}"})
 
     return {
         'generated_at': datetime.now(timezone.utc).isoformat(),
         'model': AI_MODEL,
-        'news': news,
+        'news': all_news,
         'ticker': ticker
     }
 
 
 def update_gist(output):
-    """Update the GitHub Gist with new news data."""
     if not GITHUB_TOKEN or not GIST_ID:
-        # Write to local file instead
-        output_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'news-latest.json')
-        with open(output_path, 'w') as f:
-            json.dump(output, f, indent=2)
-        print(f"Written to {output_path}")
         return
 
     body = json.dumps({
-        'files': {
-            'news-latest.json': {
-                'content': json.dumps(output, indent=2)
-            }
-        }
+        'files': {'news-latest.json': {'content': json.dumps(output, indent=2)}}
     }).encode()
 
     req = urllib.request.Request(
         f'https://api.github.com/gists/{GIST_ID}',
-        data=body,
-        method='PATCH',
-        headers={
-            'Authorization': f'Bearer {GITHUB_TOKEN}',
-            'Content-Type': 'application/json'
-        }
+        data=body, method='PATCH',
+        headers={'Authorization': f'Bearer {GITHUB_TOKEN}', 'Content-Type': 'application/json'}
     )
 
     try:
         with urllib.request.urlopen(req) as r:
-            result = json.loads(r.read())
-        print(f"Gist updated: {result.get('html_url', 'OK')}")
+            print(f"Gist updated")
     except Exception as e:
         print(f"Gist update failed: {e}")
-        # Fallback to local file
-        output_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'news-latest.json')
-        with open(output_path, 'w') as f:
-            json.dump(output, f, indent=2)
-        print(f"Written to {output_path}")
 
 
-# === MAIN ===
+# =============================================
+# MAIN
+# =============================================
+
 def main():
     print(f"=== MEMES 24H News Generator ===")
     print(f"Time: {datetime.now(timezone.utc).isoformat()}")
@@ -409,7 +434,6 @@ def main():
         with open(CONFIG_PATH) as f:
             config = json.load(f)
     else:
-        print("No waves-config.json found, using defaults")
         config = {
             'waves': [
                 {'id': 'b38288e6-ca9d-45ce-8323-3dc5e094f04e', 'name': "maybe's dive bar", 'type': 'chat'},
@@ -422,29 +446,50 @@ def main():
             ]
         }
 
-    # Gather data
-    print("\n--- Gathering data ---")
-    wave_data = gather_wave_data(config['waves'])
-    submissions = gather_submission_data(config['waves'])
-    market_data = gather_market_data(config['collections'])
+    # ---- FIXED NEWS (always present) ----
+    print("\n--- Fixed: Market Recap ---")
+    market_news = build_market_recap(config['collections'])
 
-    # Generate news
-    print("\n--- Generating news ---")
-    news = generate_news_with_ai(wave_data, submissions, market_data)
+    print("\n--- Fixed: Top 3 Memes ---")
+    memes_top3 = build_top3_leaderboard(MEMES_WAVE_ID, 'The Memes - Main Stage', 'MAIN STAGE TOP 3')
 
-    # Build output
-    output = build_output(news, market_data)
-    print(f"\n--- Output: {len(news)} news items ---")
+    print("\n--- Fixed: Top 3 SuperRare ---")
+    sr_top3 = build_top3_leaderboard(SR_WAVE_ID, 'SuperRare x 6529', 'SUPERRARE TOP 3')
 
-    # Update gist or local file
+    fixed_news = market_news + memes_top3 + sr_top3
+
+    # ---- VARIABLE NEWS (AI-generated) ----
+    print("\n--- Gathering wave activity (min 3 msgs/6h) ---")
+    wave_data = gather_significant_wave_data(config['waves'])
+    print(f"  {len(wave_data)} waves with significant activity")
+
+    print("\n--- Generating additional news via AI ---")
+    max_additional = 10 - len(fixed_news)
+    variable_news = generate_additional_news_ai(wave_data, max_news=max(0, max_additional))
+
+    # ---- BUILD OUTPUT ----
+    # Store raw market data for ticker
+    market_raw = []
+    for c in config['collections']:
+        stats = fetch_opensea_stats(c['slug'])
+        if stats:
+            market_raw.append({
+                'name': c['name'],
+                'floor': stats['total'].get('floor_price', 0),
+                'floor_sym': stats['total'].get('floor_price_symbol', 'ETH')
+            })
+
+    output = build_output(fixed_news, variable_news, market_raw)
+    print(f"\n--- Total: {len(output['news'])} news items ({len(fixed_news)} fixed + {len(variable_news)} variable) ---")
+
+    # ---- PUBLISH ----
     print("\n--- Publishing ---")
     update_gist(output)
 
-    # Also write to repo data folder
-    output_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'news-latest.json')
+    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'data', 'news-latest.json')
     with open(output_path, 'w') as f:
         json.dump(output, f, indent=2)
-    print(f"Also written to {output_path}")
+    print(f"Written to {output_path}")
 
     print("\nDone!")
 
