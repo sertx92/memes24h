@@ -7,411 +7,317 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Teko:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 
+  /* Palette: Seize the Memes of Production
+     Dark brown: #1a0e08, #2a1a10
+     Crimson red: #8b1a1a, #b22222, #cc2200
+     Gold: #c8a84e, #dab551, #e8c65a
+     Warm cream: #f0e6d0
+  */
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html, body {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Oswald', sans-serif;
-    background: #06081a;
-  }
-
-  /* Scale to fit viewport while keeping 1:1 ratio */
-  .container {
-    width: 1080px;
-    height: 1080px;
-    position: relative;
-    overflow: hidden;
-    transform-origin: top left;
-  }
+  html, body { width: 100vw; height: 100vh; overflow: hidden; font-family: 'Oswald', sans-serif; background: #0e0806; }
+  .container { width: 1080px; height: 1080px; position: relative; overflow: hidden; transform-origin: top left; }
 
   /* === BACKGROUND === */
   .bg {
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg, #0c1428 0%, #080e1e 50%, #0c1428 100%);
-    z-index: 0;
+    position: absolute; inset: 0; z-index: 0;
+    background: linear-gradient(180deg, #1a0e08 0%, #120a06 50%, #1a0e08 100%);
   }
   .bg::before {
     content: ''; position: absolute; inset: 0;
     background:
-      radial-gradient(circle at 50% 30%, rgba(30,60,140,0.12) 0%, transparent 55%),
-      radial-gradient(circle at 20% 80%, rgba(0,60,160,0.05) 0%, transparent 40%),
-      radial-gradient(circle at 85% 70%, rgba(0,60,160,0.05) 0%, transparent 40%);
+      radial-gradient(circle at 50% 40%, rgba(140,30,30,0.08) 0%, transparent 55%),
+      radial-gradient(circle at 20% 80%, rgba(100,50,10,0.04) 0%, transparent 40%);
   }
   .bg::after {
     content: ''; position: absolute; inset: 0;
     background-image:
-      linear-gradient(rgba(0,80,200,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,80,200,0.015) 1px, transparent 1px);
+      linear-gradient(rgba(200,168,78,0.012) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,168,78,0.012) 1px, transparent 1px);
     background-size: 36px 36px;
   }
 
   .scanlines {
     position: absolute; inset: 0; z-index: 50; pointer-events: none;
-    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px);
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
   }
 
   /* === TOP BAR === */
   .top-bar {
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 72px;
-    background: linear-gradient(180deg, #1a3366 0%, #0e2040 70%, #0a1830 100%);
-    border-bottom: 4px solid #cc2200;
-    z-index: 20;
-    display: flex; align-items: center;
-    padding: 0 28px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+    position: absolute; top: 0; left: 0; right: 0; height: 72px;
+    background: linear-gradient(180deg, #2a1a10 0%, #1a0e08 100%);
+    border-bottom: 4px solid #b22222; z-index: 20;
+    display: flex; align-items: center; padding: 0 28px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.6);
   }
   .top-bar::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, rgba(80,140,255,0.2), rgba(80,140,255,0.5), rgba(80,140,255,0.2));
+    background: linear-gradient(90deg, rgba(200,168,78,0.15), rgba(200,168,78,0.4), rgba(200,168,78,0.15));
   }
 
   .logo { display: flex; align-items: center; }
   .logo-num {
-    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 48px; color: #fff;
-    background: linear-gradient(180deg, #cc2200, #991100); padding: 2px 14px 6px; line-height: 0.85;
-    letter-spacing: 1px;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1);
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 46px; color: #f0e6d0;
+    background: linear-gradient(180deg, #b22222, #8b1a1a);
+    padding: 8px 16px; line-height: 1; display: flex; align-items: center;
+    letter-spacing: 2px;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.08);
   }
   .logo-news {
-    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 48px; color: #fff;
-    letter-spacing: 4px; margin-left: 8px;
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 46px; color: #c8a84e;
+    letter-spacing: 5px; margin-left: 10px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
 
-  .top-right { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 18px; }
   .gov-btn {
-    background: rgba(204,34,0,0.3); border: 1px solid rgba(204,34,0,0.5);
-    color: rgba(255,255,255,0.6); font-family: 'Teko', sans-serif; font-weight: 600;
-    font-size: 18px; letter-spacing: 2px; padding: 2px 12px; text-decoration: none;
+    background: rgba(178,34,34,0.25); border: 1px solid rgba(178,34,34,0.5);
+    color: rgba(200,168,78,0.7); font-family: 'Teko', sans-serif; font-weight: 600;
+    font-size: 16px; letter-spacing: 2px; padding: 3px 12px; text-decoration: none;
   }
-  .gov-btn:hover { background: rgba(204,34,0,0.5); color: #fff; }
+  .gov-btn:hover { background: rgba(178,34,34,0.4); color: #c8a84e; }
   .tool-btn {
-    background: rgba(80,140,255,0.15); border: 1px solid rgba(80,140,255,0.25);
-    color: rgba(255,255,255,0.5); font-family: 'Teko', sans-serif; font-weight: 600;
-    font-size: 14px; letter-spacing: 2px; padding: 2px 10px; cursor: pointer;
-    transition: all 0.2s;
+    background: rgba(200,168,78,0.1); border: 1px solid rgba(200,168,78,0.25);
+    color: rgba(200,168,78,0.5); font-family: 'Teko', sans-serif; font-weight: 600;
+    font-size: 14px; letter-spacing: 2px; padding: 3px 10px; cursor: pointer;
   }
-  .tool-btn:hover { background: rgba(80,140,255,0.3); color: #fff; }
-  .tool-btn.recording { background: rgba(204,34,0,0.4); border-color: #cc2200; color: #ff4444; animation: liveBlink 0.5s step-end infinite; }
+  .tool-btn:hover { background: rgba(200,168,78,0.2); color: #c8a84e; }
+
   .live-indicator { display: flex; align-items: center; gap: 8px; }
-  .live-dot {
-    width: 12px; height: 12px; background: #cc2200; border-radius: 50%;
-    animation: liveBlink 1s step-end infinite;
-    box-shadow: 0 0 8px rgba(204,34,0,0.8);
-  }
+  .live-dot { width: 10px; height: 10px; background: #b22222; border-radius: 50%; animation: liveBlink 1s step-end infinite; box-shadow: 0 0 6px rgba(178,34,34,0.8); }
   @keyframes liveBlink { 50% { opacity: 0.2; } }
-  .live-text { font-family: 'Teko', sans-serif; font-weight: 600; font-size: 22px; color: #cc2200; letter-spacing: 3px; }
-  .clock { font-family: 'Share Tech Mono', monospace; font-size: 20px; color: rgba(255,255,255,0.7); letter-spacing: 2px; }
-  .date-display { font-family: 'Oswald', sans-serif; font-size: 14px; color: rgba(255,255,255,0.35); letter-spacing: 1px; }
+  .live-text { font-family: 'Teko', sans-serif; font-weight: 600; font-size: 20px; color: #b22222; letter-spacing: 3px; }
+  .clock { font-family: 'Share Tech Mono', monospace; font-size: 18px; color: rgba(200,168,78,0.6); letter-spacing: 2px; }
+  .date-display { font-family: 'Oswald', sans-serif; font-size: 13px; color: rgba(240,230,208,0.3); letter-spacing: 1px; }
 
   /* === CATEGORY BAR === */
   .cat-bar {
-    position: absolute; top: 76px; left: 0; right: 0; height: 38px;
-    background: linear-gradient(180deg, #162844, #0e1a30);
-    border-bottom: 1px solid rgba(80,140,255,0.12); z-index: 18;
+    position: absolute; top: 76px; left: 0; right: 0; height: 36px;
+    background: linear-gradient(180deg, #1e1208, #140c06);
+    border-bottom: 1px solid rgba(200,168,78,0.1); z-index: 18;
     display: flex; align-items: center; padding: 0 28px;
-    box-shadow: inset 0 1px 0 rgba(80,140,255,0.06);
   }
   .cat-tab {
-    font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 14px;
-    letter-spacing: 2px; color: #ffcc00; text-transform: uppercase;
-    padding: 4px 16px; border-bottom: 2px solid #cc2200;
-    background: rgba(204,34,0,0.08);
+    font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 13px;
+    letter-spacing: 2px; color: #c8a84e; text-transform: uppercase;
+    padding: 4px 14px; border-bottom: 2px solid #b22222;
+    background: rgba(178,34,34,0.06);
   }
   .cat-counter {
     margin-left: auto; font-family: 'Share Tech Mono', monospace;
-    font-size: 16px; color: rgba(255,255,255,0.3); letter-spacing: 1px;
+    font-size: 14px; color: rgba(200,168,78,0.3); letter-spacing: 1px;
   }
 
   /* === MAIN NEWS AREA === */
-  .news-area {
-    position: absolute; top: 114px; left: 0; right: 0; bottom: 130px;
-    z-index: 10; padding: 0 32px;
-  }
-
-  .news-card {
-    position: absolute; inset: 0;
-    padding: 28px 32px 20px;
-    opacity: 0; display: flex; flex-direction: column;
-    pointer-events: none;
-  }
+  .news-area { position: absolute; top: 112px; left: 0; right: 0; bottom: 128px; z-index: 10; padding: 0 32px; }
+  .news-card { position: absolute; inset: 0; padding: 24px 32px 16px; opacity: 0; display: flex; flex-direction: column; pointer-events: none; }
   .news-card.active { opacity: 1; pointer-events: auto; animation: cardIn 0.5s ease-out forwards; }
   .news-card.exit { animation: cardOut 0.3s ease-in forwards; }
   @keyframes cardIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes cardOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-15px); } }
 
-  /* Category badge */
-  .card-cat-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .card-cat-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
   .card-cat {
-    background: linear-gradient(180deg, #cc2200, #991100); color: #fff;
-    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 18px;
-    letter-spacing: 2px; text-transform: uppercase; padding: 2px 18px;
-    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    background: linear-gradient(180deg, #b22222, #8b1a1a); color: #f0e6d0;
+    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 17px;
+    letter-spacing: 2px; text-transform: uppercase; padding: 3px 16px;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3);
   }
-  .card-cat-line { flex: 1; height: 2px; background: linear-gradient(90deg, #cc2200, rgba(204,34,0,0.05)); }
+  .card-cat-line { flex: 1; height: 2px; background: linear-gradient(90deg, #b22222, rgba(178,34,34,0.05)); }
 
-  /* Layout: image centered above, text below */
   .card-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
-  /* Image preview - centered, prominent */
   .card-preview {
-    width: 100%; max-height: 360px; overflow: hidden;
-    border: 2px solid rgba(80,140,255,0.12); background: rgba(0,0,0,0.4);
-    margin-bottom: 18px; position: relative; opacity: 0;
+    width: 100%; max-height: 340px; overflow: hidden;
+    border: 2px solid rgba(200,168,78,0.12); background: rgba(0,0,0,0.3);
+    margin-bottom: 16px; position: relative; opacity: 0;
     box-shadow: 0 4px 24px rgba(0,0,0,0.5);
     display: flex; align-items: center; justify-content: center;
   }
   .news-card.active .card-preview { animation: previewIn 0.5s 0.2s ease-out forwards; }
   @keyframes previewIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
-  .card-preview img { max-width: 100%; max-height: 360px; object-fit: contain; }
+  .card-preview img { max-width: 100%; max-height: 340px; object-fit: contain; }
   .card-preview-label {
     position: absolute; bottom: 0; left: 0; right: 0;
     background: linear-gradient(transparent, rgba(0,0,0,0.85));
-    padding: 24px 14px 8px; font-family: 'Oswald', sans-serif;
-    font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5);
+    padding: 20px 14px 8px; font-family: 'Oswald', sans-serif;
+    font-size: 13px; font-weight: 500; color: rgba(240,230,208,0.5);
     letter-spacing: 1px; text-transform: uppercase; text-align: center;
   }
 
-  /* Headline */
   .card-headline {
-    color: #ffffff; font-family: 'Oswald', sans-serif; font-weight: 700;
-    font-size: 38px; line-height: 1.15; margin-bottom: 12px;
+    color: #f0e6d0; font-family: 'Oswald', sans-serif; font-weight: 700;
+    font-size: 36px; line-height: 1.15; margin-bottom: 12px;
     text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     opacity: 0;
   }
   .news-card.active .card-headline { animation: textIn 0.4s 0.15s ease-out forwards; }
   @keyframes textIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* Divider */
-  .card-divider { width: 0; height: 3px; background: linear-gradient(90deg, #cc2200, #ffcc00); margin-bottom: 14px; }
+  .card-divider { width: 0; height: 3px; background: linear-gradient(90deg, #b22222, #c8a84e); margin-bottom: 14px; }
   .news-card.active .card-divider { animation: divGrow 0.4s 0.25s ease-out forwards; }
   @keyframes divGrow { to { width: 140px; } }
 
-  /* Summary */
   .card-summary {
-    color: rgba(220,225,240,0.7); font-family: 'Oswald', sans-serif; font-weight: 400;
-    font-size: 20px; line-height: 1.45; opacity: 0;
+    color: rgba(240,230,208,0.55); font-family: 'Oswald', sans-serif; font-weight: 400;
+    font-size: 19px; line-height: 1.45; opacity: 0;
   }
   .news-card.active .card-summary { animation: textIn 0.4s 0.35s ease-out forwards; }
 
-  /* Data boxes - full width at bottom */
-  .card-data {
-    display: flex; gap: 3px; margin-top: auto; padding-top: 16px; opacity: 0;
-    width: 100%;
-  }
+  .card-data { display: flex; gap: 3px; margin-top: auto; padding-top: 14px; opacity: 0; width: 100%; }
   .news-card.active .card-data { animation: textIn 0.4s 0.45s ease-out forwards; }
   .data-box {
-    flex: 1; background: linear-gradient(180deg, rgba(18,36,72,0.9), rgba(10,20,44,0.95));
-    border: 1px solid rgba(80,140,255,0.1); padding: 14px 10px; text-align: center;
-    box-shadow: inset 0 1px 0 rgba(80,140,255,0.05);
+    flex: 1; background: linear-gradient(180deg, rgba(42,26,16,0.9), rgba(26,14,8,0.95));
+    border: 1px solid rgba(200,168,78,0.1); padding: 12px 10px; text-align: center;
   }
   .data-box:first-child { border-radius: 4px 0 0 4px; }
   .data-box:last-child { border-radius: 0 4px 4px 0; }
-  .data-label {
-    font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
-    letter-spacing: 1.5px; color: rgba(80,160,255,0.5); text-transform: uppercase; margin-bottom: 4px;
-  }
-  .data-value {
-    font-family: 'Teko', sans-serif; font-size: 30px; font-weight: 700;
-    color: #ffcc00; text-shadow: 0 0 10px rgba(255,204,0,0.15);
-  }
-  .data-sub { font-family: 'Oswald', sans-serif; font-size: 12px; color: rgba(255,255,255,0.2); margin-top: 2px; }
+  .data-label { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 1.5px; color: rgba(200,168,78,0.45); text-transform: uppercase; margin-bottom: 4px; }
+  .data-value { font-family: 'Teko', sans-serif; font-size: 28px; font-weight: 700; color: #c8a84e; }
+  .data-sub { font-family: 'Oswald', sans-serif; font-size: 11px; color: rgba(240,230,208,0.2); margin-top: 2px; }
 
-  /* Source */
-  .card-source {
-    display: flex; align-items: center; gap: 8px; padding-top: 12px; opacity: 0;
-  }
+  .card-source { display: flex; align-items: center; gap: 8px; padding-top: 10px; opacity: 0; }
   .news-card.active .card-source { animation: textIn 0.3s 0.5s ease-out forwards; }
-  .source-dot { width: 7px; height: 7px; background: #cc2200; border-radius: 50%; }
-  .source-text {
-    color: rgba(255,255,255,0.25); font-family: 'Oswald', sans-serif;
-    font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
-  }
-  .source-link {
-    color: rgba(80,160,255,0.4); font-family: 'Oswald', sans-serif;
-    font-size: 13px; letter-spacing: 1px; text-decoration: none; margin-left: 6px;
-  }
-  .source-link:hover { color: rgba(80,160,255,0.8); }
+  .source-dot { width: 6px; height: 6px; background: #b22222; border-radius: 50%; }
+  .source-text { color: rgba(240,230,208,0.2); font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .source-link { color: rgba(200,168,78,0.35); font-family: 'Oswald', sans-serif; font-size: 12px; text-decoration: none; margin-left: 6px; }
+  .source-link:hover { color: rgba(200,168,78,0.7); }
 
-  /* === HEADLINE BAR === */
-  .headline-bar {
-    position: absolute; bottom: 64px; left: 0; right: 0; height: 66px; z-index: 15; display: flex;
-  }
+  /* === HEADLINE BAR (NEWS label in red, content in dark) === */
+  .headline-bar { position: absolute; bottom: 62px; left: 0; right: 0; height: 66px; z-index: 15; display: flex; }
   .headline-label {
-    background: linear-gradient(180deg, #cc2200, #991100); color: #fff;
-    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 28px;
-    letter-spacing: 4px; display: flex; align-items: center; padding: 0 20px;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1);
+    background: linear-gradient(180deg, #b22222, #8b1a1a); color: #f0e6d0;
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 26px;
+    letter-spacing: 4px; display: flex; align-items: center; padding: 0 18px;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.05);
   }
   .headline-content {
-    flex: 1; background: linear-gradient(180deg, #142040, #0e1830);
-    border-top: 2px solid rgba(204,34,0,0.6); border-bottom: 2px solid rgba(0,40,90,0.4);
-    display: flex; align-items: center; padding: 0 24px; overflow: hidden;
+    flex: 1; background: linear-gradient(180deg, #1e1208, #140c06);
+    border-top: 2px solid rgba(178,34,34,0.5); border-bottom: 2px solid rgba(200,168,78,0.1);
+    display: flex; align-items: center; padding: 0 20px; overflow: hidden;
   }
   .headline-text {
-    color: #ffffff; font-family: 'Oswald', sans-serif; font-weight: 600;
-    font-size: 20px; letter-spacing: 1px; white-space: nowrap; text-transform: uppercase;
-    flex: 1;
+    color: #f0e6d0; font-family: 'Oswald', sans-serif; font-weight: 500;
+    font-size: 17px; letter-spacing: 1px; white-space: nowrap; text-transform: uppercase; flex: 1;
   }
   .nav-arrows { display: flex; gap: 3px; flex-shrink: 0; }
   .nav-btn {
-    width: 40px; height: 40px;
-    background: linear-gradient(180deg, rgba(26,51,102,0.6), rgba(14,32,64,0.8));
-    border: 1px solid rgba(80,140,255,0.12); color: rgba(255,255,255,0.4);
-    font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px;
+    background: linear-gradient(180deg, rgba(42,26,16,0.6), rgba(20,12,6,0.8));
+    border: 1px solid rgba(200,168,78,0.1); color: rgba(200,168,78,0.4);
+    font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-  .nav-btn:hover {
-    background: linear-gradient(180deg, rgba(204,34,0,0.4), rgba(153,17,0,0.4));
-    color: #fff; border-color: rgba(204,34,0,0.5);
-  }
+  .nav-btn:hover { background: rgba(178,34,34,0.3); color: #c8a84e; border-color: rgba(178,34,34,0.5); }
 
-  /* Progress */
-  .progress-bar {
-    position: absolute; bottom: 64px; left: 0; right: 0; height: 3px;
-    background: rgba(0,0,0,0.3); z-index: 16; transform: translateY(-1px);
-  }
-  .progress-fill { height: 100%; background: linear-gradient(90deg, #cc2200, #ffcc00); width: 0%; box-shadow: 0 0 8px rgba(255,204,0,0.3); }
+  .progress-bar { position: absolute; bottom: 62px; left: 0; right: 0; height: 3px; background: rgba(0,0,0,0.3); z-index: 16; transform: translateY(-1px); }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #b22222, #c8a84e); width: 0%; box-shadow: 0 0 6px rgba(200,168,78,0.3); }
 
-  /* === TICKER === */
+  /* === TICKER (MARKET label: white text on red bg - inverted) === */
   .ticker-bar {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 64px; z-index: 15;
-    display: flex; background: linear-gradient(180deg, #0a1428, #060e1e);
-    border-top: 1px solid rgba(80,140,255,0.06);
+    position: absolute; bottom: 0; left: 0; right: 0; height: 62px; z-index: 15;
+    display: flex; background: linear-gradient(180deg, #140c06, #0e0806);
+    border-top: 1px solid rgba(200,168,78,0.06);
   }
   .ticker-label {
-    background: linear-gradient(180deg, #1a3366, #102040); color: #ffcc00;
-    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 18px;
-    letter-spacing: 2px; display: flex; align-items: center; padding: 0 16px;
-    border-right: 2px solid rgba(204,34,0,0.4);
+    background: linear-gradient(180deg, #f0e6d0, #d8c8a8); color: #8b1a1a;
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 18px;
+    letter-spacing: 2px; display: flex; align-items: center; padding: 0 14px;
+    border-right: 2px solid #b22222;
   }
   .ticker-track { flex: 1; overflow: hidden; display: flex; align-items: center; position: relative; }
-  .ticker-content {
-    display: flex; align-items: center; white-space: nowrap;
-    animation: tickerScroll 60s linear infinite;
-    position: absolute; left: 0;
-  }
+  .ticker-content { display: flex; align-items: center; white-space: nowrap; animation: tickerScroll 60s linear infinite; position: absolute; left: 0; }
   @keyframes tickerScroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
   .ticker-item { display: flex; align-items: center; gap: 6px; padding: 0 16px; flex-shrink: 0; }
-  .ticker-item-label {
-    font-family: 'Teko', sans-serif; font-size: 13px; font-weight: 600;
-    letter-spacing: 1.5px; color: rgba(80,160,255,0.4); text-transform: uppercase;
-  }
-  .ticker-item-value { font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 500; color: #ffffff; }
-  .ticker-memes .ticker-item-label { color: #ff5533; font-size: 16px; }
-  .ticker-memes .ticker-item-value { color: #ffffff; }
-  .ticker-sr .ticker-item-label { color: #aa66ff; font-size: 16px; }
-  .ticker-sr .ticker-item-value { color: #ffffff; }
-  .ticker-market .ticker-item-label { color: rgba(255,204,0,0.6); }
-  .ticker-market .ticker-item-value { color: #ffcc00; }
-  .ticker-separator { color: rgba(80,140,255,0.1); font-size: 18px; flex-shrink: 0; padding: 0 4px; }
-
-  .ticker-brand { display: flex; align-items: center; padding: 0 28px; flex-shrink: 0; }
-  .ticker-brand-badge {
-    background: #ffffff; color: #0a0a18; font-family: 'Teko', sans-serif;
-    font-weight: 700; font-size: 16px; padding: 2px 10px; letter-spacing: 1px; line-height: 1;
-  }
-  .ticker-brand-text {
-    font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 500;
-    letter-spacing: 2px; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-left: 10px;
-  }
+  .ticker-item-label { font-family: 'Teko', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 1.5px; color: rgba(200,168,78,0.4); text-transform: uppercase; }
+  .ticker-item-value { font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 500; color: #f0e6d0; }
+  .ticker-memes .ticker-item-label { color: #cc3333; font-size: 15px; }
+  .ticker-sr .ticker-item-label { color: #9966cc; font-size: 15px; }
+  .ticker-market .ticker-item-label { color: rgba(200,168,78,0.5); }
+  .ticker-market .ticker-item-value { color: #c8a84e; }
+  .ticker-separator { color: rgba(200,168,78,0.08); font-size: 16px; flex-shrink: 0; padding: 0 4px; }
 
   /* Side accents */
-  .side-l { position: absolute; left: 0; top: 114px; bottom: 130px; width: 4px; z-index: 12; background: linear-gradient(180deg, #cc2200, rgba(204,34,0,0.05), #cc2200); }
-  .side-r { position: absolute; right: 0; top: 114px; bottom: 130px; width: 4px; z-index: 12; background: linear-gradient(180deg, rgba(80,140,255,0.08), rgba(80,140,255,0.03), rgba(80,140,255,0.08)); }
+  .side-l { position: absolute; left: 0; top: 112px; bottom: 128px; width: 4px; z-index: 12; background: linear-gradient(180deg, #b22222, rgba(178,34,34,0.03), #b22222); }
+  .side-r { position: absolute; right: 0; top: 112px; bottom: 128px; width: 4px; z-index: 12; background: linear-gradient(180deg, rgba(200,168,78,0.06), rgba(200,168,78,0.02), rgba(200,168,78,0.06)); }
 
-  /* === USERNAME HIGHLIGHT === */
-  .username { color: #ffcc00; font-weight: 600; }
+  .username { color: #c8a84e; font-weight: 600; }
 
-  /* === INTRO OVERLAY === */
+  /* === INTRO === */
   .intro-overlay {
     position: absolute; inset: 0; z-index: 100;
-    background: radial-gradient(circle at 50% 50%, #0a1428, #040810);
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-    transition: opacity 0.6s ease;
+    background: radial-gradient(circle at 50% 50%, #1a0e08, #080402);
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    transition: opacity 0.5s ease;
   }
   .intro-overlay.fade-out { opacity: 0; pointer-events: none; }
   .intro-overlay.hidden { display: none; }
 
   .intro-grid {
     position: absolute; inset: 0;
-    background-image:
-      linear-gradient(rgba(80,140,255,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(80,140,255,0.04) 1px, transparent 1px);
-    background-size: 36px 36px;
-    opacity: 0; animation: introFadeIn 0.4s 0.1s ease-out forwards;
+    background-image: linear-gradient(rgba(200,168,78,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(200,168,78,0.03) 1px, transparent 1px);
+    background-size: 36px 36px; opacity: 0; animation: introFadeIn 0.3s 0.05s ease-out forwards;
   }
-
   .intro-ring {
-    position: absolute; border: 1px solid rgba(80,140,255,0.08); border-radius: 50%;
-    opacity: 0; animation: introRingSpin 20s linear infinite, introFadeIn 0.6s ease-out forwards;
+    position: absolute; border: 1px solid rgba(200,168,78,0.06); border-radius: 50%;
+    opacity: 0; animation: introRingSpin 20s linear infinite, introFadeIn 0.4s ease-out forwards;
   }
   .intro-ring-1 { width: 500px; height: 500px; }
-  .intro-ring-2 { width: 600px; height: 600px; animation-delay: 0.15s; animation-duration: 25s; }
-  .intro-ring-3 { width: 700px; height: 700px; border-style: dashed; border-color: rgba(80,140,255,0.04); animation-delay: 0.25s; animation-duration: 30s; }
+  .intro-ring-2 { width: 600px; height: 600px; animation-delay: 0.1s; }
+  .intro-ring-3 { width: 700px; height: 700px; border-style: dashed; border-color: rgba(178,34,34,0.06); animation-delay: 0.15s; }
   @keyframes introRingSpin { to { transform: rotate(360deg); } }
   @keyframes introFadeIn { to { opacity: 1; } }
 
   .intro-red-line {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 0; height: 3px; background: #cc2200; z-index: 5;
-    animation: introLineGrow 0.4s 0.4s ease-out forwards;
-    box-shadow: 0 0 20px rgba(204,34,0,0.4);
+    width: 0; height: 3px; background: #b22222; z-index: 5;
+    animation: introLineGrow 0.3s 0.3s ease-out forwards;
+    box-shadow: 0 0 15px rgba(178,34,34,0.5);
   }
   @keyframes introLineGrow { to { width: 800px; } }
 
   .intro-flash {
-    position: absolute; inset: 0; background: rgba(255,255,255,0.7);
+    position: absolute; inset: 0; background: rgba(240,230,208,0.5);
     opacity: 0; pointer-events: none; z-index: 10;
-    animation: introFlash 0.2s 0.7s ease-out forwards;
+    animation: introFlash 0.15s 0.55s ease-out forwards;
   }
-  @keyframes introFlash { 0% { opacity: 0.6; } 100% { opacity: 0; } }
+  @keyframes introFlash { 0% { opacity: 0.5; } 100% { opacity: 0; } }
 
   .intro-logo {
     position: relative; z-index: 15; text-align: center;
-    opacity: 0; transform: scale(0.8);
-    animation: introLogoIn 0.3s 0.7s ease-out forwards;
+    opacity: 0; transform: scale(0.85);
+    animation: introLogoIn 0.25s 0.55s ease-out forwards;
   }
   @keyframes introLogoIn { to { opacity: 1; transform: scale(1); } }
 
   .intro-logo-row { display: flex; align-items: center; justify-content: center; }
   .intro-6529 {
-    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 120px; color: #fff;
-    background: linear-gradient(180deg, #cc2200, #991100); padding: 4px 24px 10px; line-height: 0.85;
-    letter-spacing: 2px;
-    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.3), inset 0 4px 0 rgba(255,255,255,0.1), 0 0 40px rgba(204,34,0,0.3);
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 110px; color: #f0e6d0;
+    background: linear-gradient(180deg, #b22222, #8b1a1a);
+    padding: 10px 28px; line-height: 1; display: flex; align-items: center;
+    letter-spacing: 3px;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3), inset 0 3px 0 rgba(255,255,255,0.06), 0 0 40px rgba(178,34,34,0.3);
   }
   .intro-news-text {
-    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 120px; color: #fff;
-    letter-spacing: 8px; margin-left: 16px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 40px rgba(80,140,255,0.1);
+    font-family: 'Teko', sans-serif; font-weight: 700; font-size: 110px; color: #c8a84e;
+    letter-spacing: 10px; margin-left: 18px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 30px rgba(200,168,78,0.1);
   }
   .intro-subtitle {
-    font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 22px;
-    color: rgba(255,255,255,0.4); letter-spacing: 12px; text-transform: uppercase;
-    margin-top: 16px; opacity: 0;
-    animation: introFadeIn 0.4s 1.2s ease-out forwards;
+    font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 20px;
+    color: rgba(200,168,78,0.35); letter-spacing: 10px; text-transform: uppercase;
+    margin-top: 14px; opacity: 0;
+    animation: introFadeIn 0.3s 0.9s ease-out forwards;
   }
-
   .intro-scanlines {
     position: absolute; inset: 0; z-index: 50; pointer-events: none;
     background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
   }
 
-  /* Auto-scale */
-  @media screen {
-    .container {
-      transform: scale(var(--scale, 1));
-    }
-  }
+  @media screen { .container { transform: scale(var(--scale, 1)); } }
 </style>
 </head>
 <body>
 <div class="container" id="container">
-  <!-- INTRO OVERLAY -->
   <div class="intro-overlay" id="introOverlay">
     <div class="intro-grid"></div>
     <div class="intro-ring intro-ring-1"></div>
@@ -454,7 +360,6 @@
   </div>
 
   <div class="news-area" id="newsStage"></div>
-
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
   <div class="headline-bar">
@@ -478,16 +383,15 @@
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #2</span><span class="ticker-item-value">awhurst 556K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #3</span><span class="ticker-item-value">blake69 301K</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item ticker-market"><span class="ticker-item-label">Memes Total Vol</span><span class="ticker-item-value">26,787 ETH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Vol</span><span class="ticker-item-value">26,787 ETH</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Sales</span><span class="ticker-item-value">94,428</span></div><div class="ticker-separator">|</div>
-        <!-- duplicate -->
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #1</span><span class="ticker-item-value">dangiuz 98.6M</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #2</span><span class="ticker-item-value">BrynnAlise 4.0M</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-memes"><span class="ticker-item-label">Memes #3</span><span class="ticker-item-value">MintFace 630K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #1</span><span class="ticker-item-value">Kostas_Photo 765K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #2</span><span class="ticker-item-value">awhurst 556K</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-sr"><span class="ticker-item-label">SR #3</span><span class="ticker-item-value">blake69 301K</span></div><div class="ticker-separator">|</div>
-        <div class="ticker-item ticker-market"><span class="ticker-item-label">Memes Total Vol</span><span class="ticker-item-value">26,787 ETH</span></div><div class="ticker-separator">|</div>
+        <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Vol</span><span class="ticker-item-value">26,787 ETH</span></div><div class="ticker-separator">|</div>
         <div class="ticker-item ticker-market"><span class="ticker-item-label">Total Sales</span><span class="ticker-item-value">94,428</span></div><div class="ticker-separator">|</div>
       </div>
     </div>
@@ -495,99 +399,48 @@
 </div>
 
 <script>
-  // Auto-scale container to viewport
   function scaleContainer() {
     const c = document.getElementById('container');
     const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1080);
-    c.style.setProperty('--scale', s);
     c.style.transform = `scale(${s})`;
   }
   window.addEventListener('resize', scaleContainer);
   scaleContainer();
 
-  // === INTRO: fade out after 3.4s, remove at 4s ===
+  // Intro: 2.8s then fade
   setTimeout(() => {
     const intro = document.getElementById('introOverlay');
-    if (intro) {
-      intro.classList.add('fade-out');
-      setTimeout(() => intro.classList.add('hidden'), 600);
-    }
-  }, 3400);
+    if (intro) { intro.classList.add('fade-out'); setTimeout(() => intro.classList.add('hidden'), 500); }
+  }, 2800);
 
-  // === HIGHLIGHT USERNAMES ===
-  // Wraps @mentions and known patterns like "by username" in yellow spans
   function highlightUsernames(text) {
     if (!text) return '';
-    // Highlight @[username] or @username patterns
     text = text.replace(/@\[?([A-Za-z0-9_]+)\]?/g, '<span class="username">$1</span>');
-    // Highlight "by Username" pattern (capital letter after "by ")
     text = text.replace(/\bby\s+([A-Z][A-Za-z0-9_]+)/g, 'by <span class="username">$1</span>');
-    // Highlight known 6529 handles pattern: "Username:" at start of quotes
-    text = text.replace(/(^|\| |: )([A-Z][a-z]+[A-Za-z0-9_]*)(:|'s|,| said| commented| posted)/g,
-      '$1<span class="username">$2</span>$3');
     return text;
   }
 
-  // === NEWS DATA ===
   const NEWS_URL = 'https://raw.githubusercontent.com/sertx92/memes24h/main/data/news-latest.json';
   const NEWS_FALLBACK = [
-    {
-      category: "MAIN STAGE TOP 3",
-      headline: "#1 dangiuz Leads with 98.6M TDH",
-      summary: '#1 "Cogito, ergo sum" by dangiuz (98.6M TDH, 59 voters) | #17 "Network for Good" by BrynnAlise (4.0M TDH, 23 voters) | #51 "Farmacy" by MintFace (630K TDH, 2 voters)',
-      source: "The Memes - Main Stage",
-      link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
-      image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_9d8defd4-e381-42f7-b387-b9db2852ff7f/392a10e2-c774-4ab4-a1d4-3aed12b1ed27.jpg", label: "#1 Cogito, ergo sum - dangiuz"},
-      dataBoxes: [{label: "#1 dangiuz", value: "98.6M", sub: "TDH (59 votes)"}, {label: "#17 BrynnAlise", value: "4.0M", sub: "TDH (23 votes)"}, {label: "#51 MintFace", value: "630K", sub: "TDH (2 votes)"}]
-    },
-    {
-      category: "SUPERRARE TOP 3",
-      headline: "#1 Kostas_Photo Leads with 765K TDH",
-      summary: '#1 Kostas_Photo (765K TDH, 7 voters) | #2 awhurst (556K TDH, 11 voters) | #3 blake69 - WAGMI (301K TDH, 7 voters)',
-      source: "SuperRare x 6529",
-      link: "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd",
-      image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_5b7ea9c6-2ca3-48a3-a5ee-79a7cc7ce359/b54609c2-b0de-42e5-9916-523036e874d4.JPG", label: "#1 Kostas_Photo"},
-      dataBoxes: [{label: "#1 Kostas_Photo", value: "765K", sub: "TDH (7 votes)"}, {label: "#2 awhurst", value: "556K", sub: "TDH (11 votes)"}, {label: "#3 blake69", value: "301K", sub: "TDH (7 votes)"}]
-    },
-    {
-      category: "COMMUNITY",
-      headline: "6529 Veteran Describes TDH Millionaire Paradox",
-      summary: 'Blocknoob in the dive bar: "Being a TDH multi-millionaire translates to zero value outside of the community." His wife walked out after the explanation.',
-      source: "maybe's dive bar",
-      link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
-      image: null, dataBoxes: null
-    },
-    {
-      category: "MARKET",
-      headline: "TDH Price Discussions Heat Up in the Dive Bar",
-      summary: 'Users expressed disbelief at TDH valuation. dangiuz commented: "100M TDH? you guys are crazy." Growing discussion around perceived value.',
-      source: "maybe's dive bar",
-      link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e",
-      image: null, dataBoxes: null
-    },
-    {
-      category: "ART",
-      headline: "Artists Express Gratitude for Votes and REP on Main Stage",
-      summary: 'Multiple artists thanked voters for support. Minotaur_Man: "Many thanks for the REP." Community engagement continues to drive the 6529 art scene.',
-      source: "The Memes - Main Stage",
-      link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
-      image: null, dataBoxes: null
-    },
-    {
-      category: "ART",
-      headline: "Longexposure Shares Atmospheric Artwork on Main Stage",
-      summary: 'Artist longexposure posted a piece depicting a lone caravan in a desolate landscape, described as a "testament to resilience" emphasizing isolation and perseverance.',
-      source: "The Memes - Main Stage",
-      link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077",
-      image: null, dataBoxes: null
-    }
+    { category: "MAIN STAGE TOP 3", headline: "#1 dangiuz Leads with 98.6M TDH", summary: '#1 "Cogito, ergo sum" by dangiuz (98.6M TDH, 59 voters) | #17 "Network for Good" by BrynnAlise (4.0M TDH)', source: "The Memes - Main Stage", link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077", image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_9d8defd4-e381-42f7-b387-b9db2852ff7f/392a10e2-c774-4ab4-a1d4-3aed12b1ed27.jpg", label: "#1 Cogito, ergo sum"}, dataBoxes: [{label: "#1 dangiuz", value: "98.6M", sub: "TDH"}, {label: "#17 BrynnAlise", value: "4.0M", sub: "TDH"}, {label: "#51 MintFace", value: "630K", sub: "TDH"}] },
+    { category: "SUPERRARE TOP 3", headline: "#1 Kostas_Photo Leads with 765K TDH", summary: '#1 Kostas_Photo (765K) | #2 awhurst (556K) | #3 blake69 (301K)', source: "SuperRare x 6529", link: "https://6529.io/waves/d22e3046-a00e-48b9-b245-a339a44c37cd", image: {url: "https://d3lqz0a4bldqgf.cloudfront.net/drops/author_5b7ea9c6-2ca3-48a3-a5ee-79a7cc7ce359/b54609c2-b0de-42e5-9916-523036e874d4.JPG", label: "#1 Kostas_Photo"}, dataBoxes: [{label: "#1 Kostas_Photo", value: "765K", sub: "TDH"}, {label: "#2 awhurst", value: "556K", sub: "TDH"}, {label: "#3 blake69", value: "301K", sub: "TDH"}] },
+    { category: "COMMUNITY", headline: "TDH Millionaire Paradox in the Dive Bar", summary: 'Blocknoob: "Being a TDH multi-millionaire translates to zero outside of the community." dangiuz: "100M TDH? you guys are crazy."', source: "maybe's dive bar", link: "https://6529.io/waves/b38288e6-ca9d-45ce-8323-3dc5e094f04e", image: null, dataBoxes: null },
+    { category: "ART", headline: "Artists Express Gratitude for Votes and REP", summary: 'Multiple artists thanked voters. Minotaur_Man: "Many thanks for the REP." Community engagement drives the 6529 art scene.', source: "The Memes - Main Stage", link: "https://6529.io/waves/b6128077-ea78-4dd9-b381-52c4eadb2077", image: null, dataBoxes: null }
+  ];
+
+  // Headline bar extra news (different from card headlines)
+  const HEADLINE_EXTRAS = [
+    "MEMES COLLECTION: 94,428 TOTAL SALES | 26,787 ETH LIFETIME VOLUME",
+    "PEBBLES FLOOR: 0.595 ETH | 445 HOLDERS",
+    "ACTIVE COMMUNITY: MULTIPLE WAVES BUZZING WITH DISCUSSION",
+    "GOVERNANCE: VOTE ON NEWS SOURCES WITH YOUR TDH"
   ];
 
   let NEWS = [...NEWS_FALLBACK];
   const CARD_DURATION = 8000;
   let currentIndex = -1;
+  let headlineExtraIdx = 0;
 
-  // Dynamic loader
   async function loadDynamicNews() {
     try {
       const res = await fetch(NEWS_URL + '?t=' + Date.now());
@@ -612,7 +465,7 @@
       const lbl = (t.label || '').toLowerCase();
       if (lbl.includes('memes') || lbl.includes('meme')) cls = 'ticker-memes';
       else if (lbl.includes('sr') || lbl.includes('super') || lbl.includes('rare')) cls = 'ticker-sr';
-      else if (lbl.includes('floor') || lbl.includes('vol') || lbl.includes('market') || lbl.includes('pebble')) cls = 'ticker-market';
+      else cls = 'ticker-market';
       return `<div class="ticker-item ${cls}"><span class="ticker-item-label">${t.label}</span><span class="ticker-item-value">${t.value}</span></div><div class="ticker-separator">|</div>`;
     }).join('');
     el.innerHTML = html + html;
@@ -620,37 +473,29 @@
     el.style.animation = `tickerScroll ${Math.max(40, items.length * 5)}s linear infinite`;
   }
 
-  // Clock
   function updateTime() {
     const n = new Date();
-    document.getElementById('clock').textContent =
-      String(n.getUTCHours()).padStart(2,'0') + ':' + String(n.getUTCMinutes()).padStart(2,'0') + ':' + String(n.getUTCSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = String(n.getUTCHours()).padStart(2,'0') + ':' + String(n.getUTCMinutes()).padStart(2,'0') + ':' + String(n.getUTCSeconds()).padStart(2,'0');
   }
   setInterval(updateTime, 1000); updateTime();
-  document.getElementById('dateDisplay').textContent =
-    new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}).toUpperCase();
+  document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}).toUpperCase();
 
-  // Build cards
   function buildCards() {
     const stage = document.getElementById('newsStage');
     NEWS.forEach((item, i) => {
       const card = document.createElement('div');
       card.className = 'news-card'; card.id = `card-${i}`;
-
       let dataHTML = '';
       if (item.dataBoxes && item.dataBoxes.length) {
         dataHTML = '<div class="card-data">' + item.dataBoxes.map(d =>
           `<div class="data-box"><div class="data-label">${d.label}</div><div class="data-value">${d.value}</div><div class="data-sub">${d.sub}</div></div>`
         ).join('') + '</div>';
       }
-
       let imageHTML = '';
       if (item.image) {
         imageHTML = `<div class="card-preview"><img src="${item.image.url}" alt="${item.image.label || ''}"><div class="card-preview-label">${item.image.label || ''}</div></div>`;
       }
-
-      const linkHTML = item.link ? `<a href="${item.link}" target="_blank" class="source-link">View &rarr;</a>` : '';
-
+      const linkHTML = item.link ? `<a href="${item.link}" target="_blank" class="source-link">View</a>` : '';
       card.innerHTML = `
         <div class="card-cat-bar"><div class="card-cat">${item.category}</div><div class="card-cat-line"></div></div>
         <div class="card-body">
@@ -660,34 +505,28 @@
           <div class="card-summary">${highlightUsernames(item.summary)}</div>
           <div class="card-source"><div class="source-dot"></div><div class="source-text">${item.source || ''}</div>${linkHTML}</div>
           ${dataHTML}
-        </div>
-      `;
+        </div>`;
       stage.appendChild(card);
     });
   }
   buildCards();
 
-  // Slideshow
   let autoTimer = null;
   function showCard(index) {
-    if (currentIndex >= 0) {
-      const p = document.getElementById(`card-${currentIndex}`);
-      p.classList.remove('active'); p.classList.add('exit');
-    }
+    if (currentIndex >= 0) { const p = document.getElementById(`card-${currentIndex}`); p.classList.remove('active'); p.classList.add('exit'); }
     currentIndex = ((index % NEWS.length) + NEWS.length) % NEWS.length;
     const card = document.getElementById(`card-${currentIndex}`);
     setTimeout(() => {
       document.querySelectorAll('.news-card.exit').forEach(c => c.classList.remove('exit'));
       card.classList.add('active');
-      const hlText = NEWS[currentIndex].headline.toUpperCase() + (NEWS[currentIndex].source ? ' | ' + NEWS[currentIndex].source.toUpperCase() : '');
-      document.getElementById('headlineText').textContent = hlText;
+      // Headline bar: show EXTRA news, not the same as card
+      headlineExtraIdx = (headlineExtraIdx + 1) % HEADLINE_EXTRAS.length;
+      document.getElementById('headlineText').textContent = HEADLINE_EXTRAS[headlineExtraIdx];
       document.getElementById('screenCounter').textContent = `${String(currentIndex+1).padStart(2,'0')}/${String(NEWS.length).padStart(2,'0')}`;
       document.getElementById('catTab').textContent = NEWS[currentIndex].category;
       const fill = document.getElementById('progressFill');
       fill.style.transition = 'none'; fill.style.width = '0%';
-      requestAnimationFrame(() => { requestAnimationFrame(() => {
-        fill.style.transition = `width ${CARD_DURATION}ms linear`; fill.style.width = '100%';
-      }); });
+      requestAnimationFrame(() => { requestAnimationFrame(() => { fill.style.transition = `width ${CARD_DURATION}ms linear`; fill.style.width = '100%'; }); });
     }, 120);
   }
   function resetAutoplay() { clearInterval(autoTimer); autoTimer = setInterval(() => showCard(currentIndex+1), CARD_DURATION); }
@@ -698,30 +537,18 @@
   loadDynamicNews();
   setInterval(loadDynamicNews, 6*60*60*1000);
 
-  // === SCREENSHOT & GIF ===
-  // Load html2canvas from CDN
-  const h2cScript = document.createElement('script');
-  h2cScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-  document.head.appendChild(h2cScript);
-
   // Screenshot
+  const h2c = document.createElement('script');
+  h2c.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  document.head.appendChild(h2c);
   document.getElementById('btnScreen').addEventListener('click', async () => {
-    const btn = document.getElementById('btnScreen');
-    btn.textContent = '...';
+    const btn = document.getElementById('btnScreen'); btn.textContent = '...';
     try {
-      const canvas = await html2canvas(document.getElementById('container'), {
-        width: 1080, height: 1080, scale: 1,
-        backgroundColor: '#06081a',
-        useCORS: true, allowTaint: true
-      });
-      const link = document.createElement('a');
-      link.download = '6529news_' + Date.now() + '.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch(e) { console.error('Screenshot failed:', e); }
+      const canvas = await html2canvas(document.getElementById('container'), { width: 1080, height: 1080, scale: 1, backgroundColor: '#0e0806', useCORS: true, allowTaint: true });
+      const a = document.createElement('a'); a.download = '6529news_' + Date.now() + '.png'; a.href = canvas.toDataURL('image/png'); a.click();
+    } catch(e) { console.error(e); }
     btn.textContent = 'SCREEN';
   });
-
 </script>
 </body>
 </html>
