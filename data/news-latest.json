@@ -3,15 +3,6 @@
   "model": "google/gemma-3-27b-it:free",
   "news": [
     {
-      "category": "MARKET RECAP",
-      "headline": "Daily Market Overview",
-      "summary": "",
-      "source": "OpenSea",
-      "link": "https://opensea.io/collection/thememes6529",
-      "image": null,
-      "dataBoxes": []
-    },
-    {
       "category": "MAIN STAGE TOP 3",
       "headline": "#1 dangiuz Leads with 98.6M TDH",
       "summary": "#1 \"Cogito, ergo sum\" by dangiuz (98.6M TDH, 59 voters) | #17 \"Network for Good \" by BrynnAlise (4.0M TDH, 23 voters) | #51 \"Farmacy\" by MintFace (630K TDH, 2 voters)",
